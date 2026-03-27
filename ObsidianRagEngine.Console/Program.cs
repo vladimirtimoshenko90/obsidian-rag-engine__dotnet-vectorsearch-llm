@@ -8,7 +8,8 @@ using Qdrant.Client.Grpc;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-    .Build();
+    .AddEnvironmentVariables()
+.Build();
 
 // --- PostgreSQL setup ---
 var connectionString = configuration.GetConnectionString("ObsidianNotes");

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ObsidianRagEngine.Console": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ObsidianRepository__Path": "D:\\obsidian\\w"
+      }
+    }
+  }
+}
