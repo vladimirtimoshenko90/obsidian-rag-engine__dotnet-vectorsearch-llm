@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ObsidianRagEngine.Console.Data.Entities;
+using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 
-namespace ObsidianRagEngine.Console.Data;
+namespace ObsidianRagEngine.Console.Data.ObsidianNotes;
 
 public class ObsidianNotesDbContext(DbContextOptions<ObsidianNotesDbContext> options)
     : DbContext(options)

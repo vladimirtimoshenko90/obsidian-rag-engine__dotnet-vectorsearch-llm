@@ -1,8 +1,8 @@
-using ObsidianRagEngine.Console.Data.Entities;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
+using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
 
-namespace ObsidianRagEngine.Console.Data.Repositories;
+namespace ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 
 public interface IObsidianNoteChunkRepository
 {

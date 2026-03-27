@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Console.Data.Entities;
+namespace ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
 
 public class ObsidianNoteChunk
 {

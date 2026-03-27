@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ObsidianRagEngine.Console.Data.Entities;
+using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 
-namespace ObsidianRagEngine.Console.Data.Repositories;
+namespace ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 
 public interface IObsidianNoteRepository
 {
