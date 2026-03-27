@@ -4,7 +4,7 @@ namespace ObsidianRagEngine.Console.Domain;
 
 public interface IObsidianRepositoryReader
 {
-    IEnumerable<string> IdentifyAllNotes();
+    List<ObsidianNoteInfo> IdentifyAllNotes();
     Task<ObsidianNoteFile> ReadNote(string filePath);
 }
 
@@ -14,11 +14,16 @@ public class ObsidianRepositoryReader(string repositoryPath) : IObsidianReposito
         new(@"!\[\[([^\]]+\.(?:png|jpg|jpeg|gif|webp|svg|bmp))\]\]",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public IEnumerable<string> IdentifyAllNotes()
+    public List<ObsidianNoteInfo> IdentifyAllNotes()
     {
         return Directory
             .EnumerateFiles(repositoryPath, "*.md", SearchOption.AllDirectories)
-            .Select(filePath => Path.GetFileNameWithoutExtension(filePath));
+            .Select(filePath => new ObsidianNoteInfo
+            {
+                Name = Path.GetFileNameWithoutExtension(filePath),
+                FilePath = filePath
+            })
+            .ToList();
     }
 
     public async Task<ObsidianNoteFile> ReadNote(string filePath)

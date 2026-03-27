@@ -45,9 +45,9 @@ Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionN
 var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
 var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath);
 
-var noteNames = repositoryReader.IdentifyAllNotes();
+var notes = repositoryReader.IdentifyAllNotes();
 Console.WriteLine("Obsidian notes:");
-foreach (var noteName in noteNames)
+foreach (var note in notes)
 {
-    Console.WriteLine($"  - {noteName}");
+    Console.WriteLine($"  - {note.Name} / {note.FilePath}");
 }
