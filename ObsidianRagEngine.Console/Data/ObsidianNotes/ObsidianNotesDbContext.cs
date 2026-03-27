@@ -7,4 +7,5 @@ public class ObsidianNotesDbContext(DbContextOptions<ObsidianNotesDbContext> opt
     : DbContext(options)
 {
     public DbSet<ObsidianNote> ObsidianNotes => Set<ObsidianNote>();
+    public DbSet<ObsidianImage> ObsidianImages => Set<ObsidianImage>();
 }
