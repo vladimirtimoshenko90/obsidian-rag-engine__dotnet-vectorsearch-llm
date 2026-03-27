@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: obsidian_rag_postgres
+    container_name: obsidianragengine-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -10,7 +10,18 @@ services:
     ports:
       - "6201:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - obsidianragengine-postgres-data:/var/lib/postgresql/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: obsidianragengine-qdrant
+    restart: unless-stopped
+    ports:
+      - "6202:6333"
+      - "6203:6334"
+    volumes:
+      - obsidianragengine-qdrant-data:/qdrant/storage
 
 volumes:
-  postgres_data:
+  obsidianragengine-postgres-data:
+  obsidianragengine-qdrant-data:
