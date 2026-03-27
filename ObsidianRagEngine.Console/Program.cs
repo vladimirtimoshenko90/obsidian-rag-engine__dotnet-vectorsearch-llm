@@ -1,18 +1,38 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
+using Qdrant.Client;
+using Qdrant.Client.Grpc;
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .Build();
 
+// --- PostgreSQL setup ---
 var connectionString = configuration.GetConnectionString("ObsidianNotes");
 
-var options = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
+var dbOptions = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
     .UseNpgsql(connectionString)
     .Options;
 
-await using var db = new ObsidianNotesDbContext(options);
+await using var db = new ObsidianNotesDbContext(dbOptions);
 await db.Database.EnsureCreatedAsync();
 
-Console.WriteLine("Database connection established and schema ensured.");
+Console.WriteLine("PostgreSQL: connection established and schema ensured.");
+
+// --- Qdrant setup ---
+const uint EmbeddingDimension = 4;
+
+var qdrantUri = new Uri(configuration.GetConnectionString("ObsidianNoteChunks")!);
+
+var qdrantClient = new QdrantClient(qdrantUri);
+
+var collectionExists = await qdrantClient.CollectionExistsAsync(ObsidianNoteChunkRepository.CollectionName);
+if (!collectionExists)
+{
+    await qdrantClient.CreateCollectionAsync(ObsidianNoteChunkRepository.CollectionName,
+        new VectorParams { Size = EmbeddingDimension, Distance = Distance.Cosine });
+}
+
+Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionName}' ensured.");

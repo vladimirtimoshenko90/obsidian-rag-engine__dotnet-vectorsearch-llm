@@ -11,9 +11,11 @@ public interface IObsidianNoteChunkRepository
     Task<IReadOnlyList<ObsidianNoteChunk>> GetByNoteId(int noteId, CancellationToken ct = default);
 }
 
-public class ObsidianNoteChunkRepository(QdrantClient qdrant, string collectionName)
+public class ObsidianNoteChunkRepository(QdrantClient qdrant)
     : IObsidianNoteChunkRepository
 {
+    public const string CollectionName = "obsidian-note-chunks";
+
     public async Task Create(ObsidianNoteChunk chunk, CancellationToken ct = default)
     {
         var point = new PointStruct
@@ -27,12 +29,12 @@ public class ObsidianNoteChunkRepository(QdrantClient qdrant, string collectionN
             }
         };
 
-        await qdrant.UpsertAsync(collectionName, [point], cancellationToken: ct);
+        await qdrant.UpsertAsync(CollectionName, [point], cancellationToken: ct);
     }
 
     public async Task Delete(Guid id, CancellationToken ct = default)
     {
-        await qdrant.DeleteAsync(collectionName, id, cancellationToken: ct);
+        await qdrant.DeleteAsync(CollectionName, id, cancellationToken: ct);
     }
 
     public async Task<IReadOnlyList<ObsidianNoteChunk>> GetByNoteId(int noteId, CancellationToken ct = default)
@@ -53,7 +55,7 @@ public class ObsidianNoteChunkRepository(QdrantClient qdrant, string collectionN
         };
 
         var points = await qdrant.ScrollAsync(
-            collectionName,
+            CollectionName,
             filter,
             limit: 1000,
             vectorsSelector: new WithVectorsSelector { Enable = true },
