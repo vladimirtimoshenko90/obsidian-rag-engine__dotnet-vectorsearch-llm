@@ -1,8 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data;
 
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .Build();
 
-var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+var connectionString = configuration.GetConnectionString("ObsidianNotes");
 
 var options = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
     .UseNpgsql(connectionString)
