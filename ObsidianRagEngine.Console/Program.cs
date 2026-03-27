@@ -6,6 +6,8 @@ using ObsidianRagEngine.Console.Domain;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddEnvironmentVariables()
