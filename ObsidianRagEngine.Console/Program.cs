@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
+using ObsidianRagEngine.Console.Domain;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
@@ -36,3 +37,14 @@ if (!collectionExists)
 }
 
 Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionName}' ensured.");
+
+// --- App ---
+var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
+var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath);
+
+var noteNames = repositoryReader.IdentifyAllNotes();
+Console.WriteLine("Obsidian notes:");
+foreach (var noteName in noteNames)
+{
+    Console.WriteLine($"  - {noteName}");
+}
