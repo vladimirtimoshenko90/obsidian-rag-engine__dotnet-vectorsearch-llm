@@ -7,7 +7,7 @@ public interface IImageOcrService
     Task<string> ExtractText(byte[] imageBytes, string language = "rus");
 }
 
-public class ImageOcrService(HttpClient httpClient) : IImageOcrService
+public class TesseractOcrService(HttpClient httpClient) : IImageOcrService
 {
     public async Task<string> ExtractText(byte[] imageBytes, string language = "rus")
     {
