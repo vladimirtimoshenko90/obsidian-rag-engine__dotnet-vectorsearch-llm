@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
+using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
@@ -45,9 +46,13 @@ Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionN
 var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
 var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath);
 
+var noteRepo = new ObsidianNoteRepository(db);
+var imageRepo = new ObsidianImageRepository(db);
+var processingService = new ObsidianNoteProcessingService(repositoryReader, noteRepo, imageRepo);
+
 var notes = repositoryReader.IdentifyAllNotes();
-Console.WriteLine("Obsidian notes:");
 foreach (var note in notes)
 {
-    Console.WriteLine($"  - {note.Name} / {note.FilePath}");
+    await processingService.ProcessNote(note);
+    Console.WriteLine($"Processed: {note.Name}");
 }

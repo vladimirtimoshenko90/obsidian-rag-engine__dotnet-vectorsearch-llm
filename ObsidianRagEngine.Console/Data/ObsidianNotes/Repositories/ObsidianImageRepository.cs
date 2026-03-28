@@ -7,6 +7,7 @@ public interface IObsidianImageRepository
 {
     Task<ObsidianImage> Create(ObsidianImage image, CancellationToken ct = default);
     Task Delete(int id, CancellationToken ct = default);
+    Task DeleteByNoteId(int noteId, CancellationToken ct = default);
     Task<ObsidianImage?> GetByFilePath(string filePath, CancellationToken ct = default);
 }
 
@@ -26,6 +27,16 @@ public class ObsidianImageRepository(ObsidianNotesDbContext db) : IObsidianImage
             return;
 
         db.ObsidianImages.Remove(image);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteByNoteId(int noteId, CancellationToken ct = default)
+    {
+        var images = await db.ObsidianImages
+            .Where(i => i.NoteId == noteId)
+            .ToListAsync(ct);
+
+        db.ObsidianImages.RemoveRange(images);
         await db.SaveChangesAsync(ct);
     }
 
