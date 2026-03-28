@@ -17,10 +17,17 @@ services:
     container_name: obsidianragengine-qdrant
     restart: unless-stopped
     ports:
-      - "6202:6333"
-      - "6203:6334"
+      - "6202:6333"     # http://localhost:6202/dashboard
+      - "6203:6334"     # grpc
     volumes:
       - obsidianragengine-qdrant-data:/qdrant/storage
+
+  tesseract:
+    image: hertzg/tesseract-server:latest
+    container_name: obsidianragengine-tesseract
+    restart: unless-stopped
+    ports:
+      - "6301:8884"
 
 volumes:
   obsidianragengine-postgres-data:
