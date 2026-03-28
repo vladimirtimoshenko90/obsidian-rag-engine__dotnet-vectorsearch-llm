@@ -1,5 +1,8 @@
 using System.Text.RegularExpressions;
 
+using System.Security.Cryptography;
+using System.Text;
+
 namespace ObsidianRagEngine.Console.Domain;
 
 public interface IObsidianRepositoryReader
@@ -38,7 +41,14 @@ public class ObsidianRepositoryReader(string repositoryPath) : IObsidianReposito
         {
             FilePath = filePath,
             Content = content,
+            ContentHash = ComputeHash(content),
             Images = images
         };
+    }
+
+    private static string ComputeHash(string content)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
+        return Convert.ToHexStringLower(bytes);
     }
 }
