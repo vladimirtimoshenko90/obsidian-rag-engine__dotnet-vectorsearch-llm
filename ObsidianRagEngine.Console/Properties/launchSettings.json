@@ -3,7 +3,8 @@
     "ObsidianRagEngine.Console": {
       "commandName": "Project",
       "environmentVariables": {
-        "ObsidianRepository__Path": "D:\\obsidian\\w"
+        "ObsidianRepository__Path": "D:\\obsidian\\w",
+        "ObsidianRepository__AttachmentsFolder": "attachments"
       }
     }
   }

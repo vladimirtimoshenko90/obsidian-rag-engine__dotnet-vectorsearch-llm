@@ -12,7 +12,7 @@ Console.OutputEncoding = System.Text.Encoding.UTF8;
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
     .AddEnvironmentVariables()
-.Build();
+    .Build();
 
 // --- PostgreSQL setup ---
 var connectionString = configuration.GetConnectionString("ObsidianNotes");
@@ -44,7 +44,8 @@ Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionN
 
 // --- App ---
 var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
-var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath);
+var attachmentsFolder = configuration["ObsidianRepository:AttachmentsFolder"]!;
+var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
 
 var noteRepo = new ObsidianNoteRepository(db);
 var imageRepo = new ObsidianImageRepository(db);
@@ -55,4 +56,19 @@ foreach (var note in notes)
 {
     await processingService.ProcessNote(note);
     Console.WriteLine($"Processed: {note.Name}");
+}
+
+var tesseractUrl = configuration["Tesseract:Url"]!;
+var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
+
+var allImages = repositoryReader.IdentifyAllImages();
+var first10 = allImages.Take(10).ToList();
+
+foreach (var imageFileName in first10)
+{
+    var imageFilePath = Path.Combine(obsidianRepositoryPath, attachmentsFolder, imageFileName);
+    var imageBytes = await File.ReadAllBytesAsync(imageFilePath);
+    var extractedText = await ocrService.ExtractText(imageBytes);
+    Console.WriteLine($"[{imageFilePath}]{Environment.NewLine}{extractedText}{Environment.NewLine}");
+    Console.WriteLine("---------------\n");
 }
