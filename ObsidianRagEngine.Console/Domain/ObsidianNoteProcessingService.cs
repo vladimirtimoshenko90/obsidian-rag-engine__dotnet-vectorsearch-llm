@@ -35,7 +35,7 @@ public class ObsidianNoteProcessingService(
             Text = noteFile.Content
         }, ct);
 
-        foreach (var imageName in noteFile.Images)
+        foreach (var imageName in noteFile.ImagePaths)
         {
             await noteImageRepo.Create(new ObsidianImage
             {

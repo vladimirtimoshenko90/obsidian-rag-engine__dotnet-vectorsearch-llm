@@ -42,25 +42,34 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
                 var ext = Path.GetExtension(f).ToLowerInvariant();
                 return ext is ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" or ".svg" or ".bmp";
             })
-            .Select(Path.GetFileName)
-            .ToList()!;
+            .ToList();
     }
 
     public async Task<ObsidianNoteFile> ReadNote(string filePath)
     {
         var content = await File.ReadAllTextAsync(filePath);
 
-        var images = ImagePattern.Matches(content)
+        var imagePaths = ImagePattern.Matches(content)
             .Select(m => m.Groups[1].Value)
-            .ToList();
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(ResolveImagePath)
+            .Where(path => path is not null)
+            .ToList()!;
 
         return new ObsidianNoteFile
         {
             FilePath = filePath,
             Content = content,
             ContentHash = ComputeHash(content),
-            Images = images
+            ImagePaths = imagePaths!
         };
+    }
+
+    private string? ResolveImagePath(string imageFileName)
+    {
+        return Directory
+            .EnumerateFiles(repositoryPath, imageFileName, SearchOption.AllDirectories)
+            .FirstOrDefault();
     }
 
     private static string ComputeHash(string content)

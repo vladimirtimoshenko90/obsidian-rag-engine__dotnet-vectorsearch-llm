@@ -64,9 +64,8 @@ var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(
 var allImages = repositoryReader.IdentifyAllImages();
 var first10 = allImages.Take(10).ToList();
 
-foreach (var imageFileName in first10)
+foreach (var imageFilePath in first10)
 {
-    var imageFilePath = Path.Combine(obsidianRepositoryPath, attachmentsFolder, imageFileName);
     var imageBytes = await File.ReadAllBytesAsync(imageFilePath);
     var extractedText = await ocrService.ExtractText(imageBytes);
     Console.WriteLine($"[{imageFilePath}]{Environment.NewLine}{extractedText}{Environment.NewLine}");
