@@ -14,8 +14,6 @@ public class ObsidianNoteProcessingService(
     IObsidianImageRepository noteImageRepo,
     IImageOcrService ocrService) : IObsidianNoteProcessingService
 {
-    private const string OcrModel = "tesseract";
-
     public async Task ProcessNote(ObsidianNoteInfo noteInfo, CancellationToken ct = default)
     {
         var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
@@ -39,7 +37,7 @@ public class ObsidianNoteProcessingService(
 
         foreach (var imagePath in noteFile.ImagePaths)
         {
-            var existing = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, OcrModel, ct);
+            var existing = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, ocrService.ModelName, ct);
             if (existing is not null)
                 continue;
 
@@ -49,7 +47,7 @@ public class ObsidianNoteProcessingService(
             await noteImageRepo.Create(new ObsidianImage
             {
                 FilePath = imagePath,
-                OcrModel = OcrModel,
+                OcrModel = ocrService.ModelName,
                 ExtractedText = extractedText
             }, ct);
         }

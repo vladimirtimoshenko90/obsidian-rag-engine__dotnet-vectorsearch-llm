@@ -4,11 +4,13 @@ namespace ObsidianRagEngine.Console.Domain;
 
 public interface IImageOcrService
 {
+    string ModelName { get; }
     Task<string> ExtractText(byte[] imageBytes, string language = "rus");
 }
 
 public class TesseractOcrService(HttpClient httpClient) : IImageOcrService
 {
+    public string ModelName => "tesseract";
     public async Task<string> ExtractText(byte[] imageBytes, string language = "rus")
     {
         var optionsJson = $"{{\"languages\": [\"{language}\"]}}";
