@@ -27,7 +27,6 @@ public class ObsidianNoteProcessingService(
             if (existingNote.ContentHash == noteFile.ContentHash)
                 return;
 
-            await noteImageRepo.DeleteByNoteId(existingNote.Id, ct);
             await noteRepo.Delete(existingNote.Id, ct);
         }
 
@@ -49,7 +48,6 @@ public class ObsidianNoteProcessingService(
 
             await noteImageRepo.Create(new ObsidianImage
             {
-                NoteId = newNote.Id,
                 FilePath = imagePath,
                 OcrModel = OcrModel,
                 ExtractedText = extractedText
