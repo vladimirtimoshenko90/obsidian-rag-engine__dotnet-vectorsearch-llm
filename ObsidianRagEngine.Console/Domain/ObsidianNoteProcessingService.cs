@@ -1,4 +1,5 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
+using System.Text.RegularExpressions;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 
 namespace ObsidianRagEngine.Console.Domain;
@@ -49,6 +50,10 @@ public class ObsidianNoteProcessingService(
             var imageEmbed = $"![[{Path.GetFileName(imagePath)}]]";
             sanitizedText = sanitizedText.Replace(imageEmbed, ocrResult.ExtractedText);
         }
+
+        sanitizedText = Regex.Replace(sanitizedText, @"#(topic|root)(/\w+)*", "");  // removing tags
+        sanitizedText = Regex.Replace(sanitizedText, @"\[\[.*?\]\]", "");   // removing links
+        sanitizedText = sanitizedText.Trim();   // trim, just trim
 
         await noteRepo.Create(new ObsidianNote
         {
