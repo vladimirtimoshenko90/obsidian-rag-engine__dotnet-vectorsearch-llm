@@ -56,7 +56,8 @@ var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(
 var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
 
 var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
-var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, null!, null!);
+var chunkingService = new TextChunkingService();
+var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, null!);
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
