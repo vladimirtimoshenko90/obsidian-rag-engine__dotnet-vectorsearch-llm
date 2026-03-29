@@ -7,6 +7,4 @@ public class ObsidianNote
     public string ContentHash { get; set; } = string.Empty;
     public string TextRaw { get; set; } = string.Empty;
     public string TextSanitized { get; set; } = string.Empty;
-    public string? OcrModel { get; set; }
-    public string? EmbeddingModel { get; set; }
 }
