@@ -6,7 +6,7 @@ namespace ObsidianRagEngine.Console.Domain;
 
 public interface IObsidianNoteIndexingService
 {
-    Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
+    Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
 }
 
 public class ObsidianNoteIndexingService(
@@ -14,14 +14,14 @@ public class ObsidianNoteIndexingService(
     IObsidianImageRepository noteImageRepo,
     IImageOcrService ocrService) : IObsidianNoteIndexingService
 {
-    public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
+    public async Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
         var existingNote = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
 
         if (existingNote is not null)
         {
             if (existingNote.ContentHash == noteFile.ContentHash)
-                return;
+                return existingNote;
 
             await noteRepo.Delete(existingNote.Id, ct);
         }
@@ -52,7 +52,7 @@ public class ObsidianNoteIndexingService(
         sanitizedText = Regex.Replace(sanitizedText, @"\[\[.*?\]\]", "");   // removing links
         sanitizedText = sanitizedText.Trim();   // trim, just trim
 
-        await noteRepo.Create(new ObsidianNote
+        return await noteRepo.Create(new ObsidianNote
         {
             FilePath = noteFile.FilePath,
             ContentHash = noteFile.ContentHash,
