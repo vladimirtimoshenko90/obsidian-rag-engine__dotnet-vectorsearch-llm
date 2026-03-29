@@ -4,15 +4,15 @@ using System.Text.RegularExpressions;
 
 namespace ObsidianRagEngine.Console.Domain;
 
-public interface IObsidianNoteProcessingService
+public interface IObsidianNoteIndexingService
 {
     Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
 }
 
-public class ObsidianNoteProcessingService(
+public class ObsidianNoteIndexingService(
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
-    IImageOcrService ocrService) : IObsidianNoteProcessingService
+    IImageOcrService ocrService) : IObsidianNoteIndexingService
 {
     public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
