@@ -28,28 +28,34 @@ public class ObsidianNoteProcessingService(
             await noteRepo.Delete(existingNote.Id, ct);
         }
 
-        var newNote = await noteRepo.Create(new ObsidianNote
-        {
-            FilePath = noteFile.FilePath,
-            ContentHash = noteFile.ContentHash,
-            Text = noteFile.Content
-        }, ct);
+        var sanitizedText = noteFile.Content;
 
         foreach (var imagePath in noteFile.ImagePaths)
         {
-            var existing = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, ocrService.ModelName, ct);
-            if (existing is not null)
-                continue;
-
-            var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
-            var extractedText = await ocrService.ExtractText(imageBytes);
-
-            await noteImageRepo.Create(new ObsidianImage
+            var ocrResult = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, ocrService.ModelName, ct);
+            if (ocrResult is null)
             {
-                FilePath = imagePath,
-                OcrModel = ocrService.ModelName,
-                ExtractedText = extractedText
-            }, ct);
+                var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
+                var extractedText = await ocrService.ExtractText(imageBytes);
+
+                ocrResult = await noteImageRepo.Create(new ObsidianImage
+                {
+                    FilePath = imagePath,
+                    OcrModel = ocrService.ModelName,
+                    ExtractedText = extractedText
+                }, ct);
+            }
+
+            var imageEmbed = $"![[{Path.GetFileName(imagePath)}]]";
+            sanitizedText = sanitizedText.Replace(imageEmbed, ocrResult.ExtractedText);
         }
+
+        await noteRepo.Create(new ObsidianNote
+        {
+            FilePath = noteFile.FilePath,
+            ContentHash = noteFile.ContentHash,
+            TextRaw = noteFile.Content,
+            TextSanitized = sanitizedText
+        }, ct);
     }
 }
