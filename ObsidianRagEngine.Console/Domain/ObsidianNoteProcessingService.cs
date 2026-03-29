@@ -1,25 +1,22 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
-using System.Text.RegularExpressions;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
+using System.Text.RegularExpressions;
 
 namespace ObsidianRagEngine.Console.Domain;
 
 public interface IObsidianNoteProcessingService
 {
-    Task ProcessNote(ObsidianNoteInfo noteInfo, CancellationToken ct = default);
+    Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
 }
 
 public class ObsidianNoteProcessingService(
-    IObsidianRepositoryReader obsidianRepo,
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
     IImageOcrService ocrService) : IObsidianNoteProcessingService
 {
-    public async Task ProcessNote(ObsidianNoteInfo noteInfo, CancellationToken ct = default)
+    public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
-        var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
-
-        var existingNote = await noteRepo.GetByFilePath(noteInfo.FilePath, ct);
+        var existingNote = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
 
         if (existingNote is not null)
         {

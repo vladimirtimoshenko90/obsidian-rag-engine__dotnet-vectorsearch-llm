@@ -22,6 +22,7 @@ var dbOptions = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
     .Options;
 
 await using var db = new ObsidianNotesDbContext(dbOptions);
+await db.Database.EnsureDeletedAsync();
 await db.Database.EnsureCreatedAsync();
 
 Console.WriteLine("PostgreSQL: connection established and schema ensured.");
@@ -45,7 +46,7 @@ Console.WriteLine($"Qdrant: collection '{ObsidianNoteChunkRepository.CollectionN
 // --- App ---
 var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
 var attachmentsFolder = configuration["ObsidianRepository:AttachmentsFolder"]!;
-var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
+var obsidianRepo = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
 
 var noteRepo = new ObsidianNoteRepository(db);
 var imageRepo = new ObsidianImageRepository(db);
@@ -53,10 +54,11 @@ var imageRepo = new ObsidianImageRepository(db);
 var tesseractUrl = configuration["Tesseract:Url"]!;
 var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
 
-var processingService = new ObsidianNoteProcessingService(repositoryReader, noteRepo, imageRepo, ocrService);
+var processingService = new ObsidianNoteProcessingService(noteRepo, imageRepo, ocrService);
 
-var notesAll = repositoryReader.IdentifyAllNotes();
-foreach (var note in notesAll)
+var noteInfos = obsidianRepo.IdentifyAllNotes();
+foreach (var noteInfo in noteInfos)
 {
-    await processingService.ProcessNote(note);
+    var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
+    await processingService.ProcessNote(noteFile);
 }
