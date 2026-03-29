@@ -22,7 +22,6 @@ var dbOptions = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
     .Options;
 
 await using var db = new ObsidianNotesDbContext(dbOptions);
-await db.Database.EnsureDeletedAsync();
 await db.Database.EnsureCreatedAsync();
 
 Console.WriteLine("PostgreSQL: connection established and schema ensured.");
