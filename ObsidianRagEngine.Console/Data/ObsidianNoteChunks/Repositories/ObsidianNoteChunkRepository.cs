@@ -25,7 +25,8 @@ public class ObsidianNoteChunkRepository(QdrantClient qdrant)
             Payload =
             {
                 ["note_id"] = chunk.NoteId,
-                ["text"] = chunk.Text
+                ["text"] = chunk.Text,
+                ["embedding_model"] = chunk.EmbeddingModel
             }
         };
 
@@ -69,6 +70,7 @@ public class ObsidianNoteChunkRepository(QdrantClient qdrant)
         Id = Guid.Parse(point.Id.Uuid),
         NoteId = (int)point.Payload["note_id"].IntegerValue,
         Text = point.Payload["text"].StringValue,
-        Embedding = [.. point.Vectors.Vector.GetDenseVector()!.Data]
+        Embedding = [.. point.Vectors.Vector.GetDenseVector()!.Data],
+        EmbeddingModel = point.Payload["embedding_model"].StringValue
     };
 }

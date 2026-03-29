@@ -20,18 +20,25 @@ public class ObsidianNoteVectorizationService(
     public async Task VectorizeNote(ObsidianNote note, CancellationToken ct = default)
     {
         var existingChunks = await chunkRepo.GetByNoteId(note.Id, ct);
-        var existingByText = existingChunks.ToDictionary(c => c.Text);
-
         var newChunkTexts = await chunkingService.Split(note.TextSanitized, ChunkSize, Overlap);
         var newChunkTextSet = newChunkTexts.ToHashSet();
 
-        var toDelete = existingChunks.Where(c => !newChunkTextSet.Contains(c.Text)).ToList();
+        // A chunk is stale if its text is no longer needed or it was embedded with a different model.
+        var toDelete = existingChunks
+            .Where(c => !newChunkTextSet.Contains(c.Text) || c.EmbeddingModel != embeddingService.ModelName)
+            .ToList();
         foreach (var stale in toDelete)
             await chunkRepo.Delete(stale.Id, ct);
 
+        // Only chunks that survived deletion are truly up-to-date.
+        var upToDate = existingChunks
+            .Except(toDelete)
+            .Select(c => c.Text)
+            .ToHashSet();
+
         foreach (var chunkText in newChunkTexts)
         {
-            if (existingByText.ContainsKey(chunkText))
+            if (upToDate.Contains(chunkText))
                 continue;
 
             var embedding = await embeddingService.EmbedAsync(chunkText, ct);
@@ -41,7 +48,8 @@ public class ObsidianNoteVectorizationService(
                 Id = Guid.NewGuid(),
                 NoteId = note.Id,
                 Text = chunkText,
-                Embedding = embedding
+                Embedding = embedding,
+                EmbeddingModel = embeddingService.ModelName
             }, ct);
         }
     }
@@ -79,5 +87,6 @@ public class TextChunkingService : ITextChunkingService
 
 public interface IEmbeddingService
 {
+    string ModelName { get; }
     Task<float[]> EmbedAsync(string text, CancellationToken ct = default);
 }
