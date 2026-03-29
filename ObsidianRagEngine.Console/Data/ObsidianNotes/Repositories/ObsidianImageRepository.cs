@@ -8,7 +8,7 @@ public interface IObsidianImageRepository
     Task<ObsidianImage> Create(ObsidianImage image, CancellationToken ct = default);
     Task Delete(int id, CancellationToken ct = default);
     Task DeleteByNoteId(int noteId, CancellationToken ct = default);
-    Task<ObsidianImage?> GetByFilePath(string filePath, CancellationToken ct = default);
+    Task<ObsidianImage?> GetByFilePathAndOcrModel(string filePath, string ocrModel, CancellationToken ct = default);
 }
 
 public class ObsidianImageRepository(ObsidianNotesDbContext db) : IObsidianImageRepository
@@ -40,9 +40,9 @@ public class ObsidianImageRepository(ObsidianNotesDbContext db) : IObsidianImage
         await db.SaveChangesAsync(ct);
     }
 
-    public Task<ObsidianImage?> GetByFilePath(string filePath, CancellationToken ct = default)
+    public Task<ObsidianImage?> GetByFilePathAndOcrModel(string filePath, string ocrModel, CancellationToken ct = default)
     {
         return db.ObsidianImages
-            .FirstOrDefaultAsync(i => i.FilePath == filePath, ct);
+            .FirstOrDefaultAsync(i => i.FilePath == filePath && i.OcrModel == ocrModel, ct);
     }
 }

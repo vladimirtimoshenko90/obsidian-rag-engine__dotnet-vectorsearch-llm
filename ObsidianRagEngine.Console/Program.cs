@@ -49,25 +49,14 @@ var repositoryReader = new ObsidianRepositoryReader(obsidianRepositoryPath, atta
 
 var noteRepo = new ObsidianNoteRepository(db);
 var imageRepo = new ObsidianImageRepository(db);
-var processingService = new ObsidianNoteProcessingService(repositoryReader, noteRepo, imageRepo);
-
-var notes = repositoryReader.IdentifyAllNotes();
-foreach (var note in notes)
-{
-    await processingService.ProcessNote(note);
-    Console.WriteLine($"Processed: {note.Name}");
-}
 
 var tesseractUrl = configuration["Tesseract:Url"]!;
 var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
 
-var allImages = repositoryReader.IdentifyAllImages();
-var first10 = allImages.Take(10).ToList();
+var processingService = new ObsidianNoteProcessingService(repositoryReader, noteRepo, imageRepo, ocrService);
 
-foreach (var imageFilePath in first10)
+var notesAll = repositoryReader.IdentifyAllNotes();
+foreach (var note in notesAll)
 {
-    var imageBytes = await File.ReadAllBytesAsync(imageFilePath);
-    var extractedText = await ocrService.ExtractText(imageBytes);
-    Console.WriteLine($"[{imageFilePath}]{Environment.NewLine}{extractedText}{Environment.NewLine}");
-    Console.WriteLine("---------------\n");
+    await processingService.ProcessNote(note);
 }
