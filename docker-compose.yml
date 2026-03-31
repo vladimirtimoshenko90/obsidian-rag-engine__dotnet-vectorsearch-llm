@@ -37,7 +37,7 @@ services:
       - "6302:11434"
     volumes:
       - obsidianragengine-ollama-data:/root/.ollama
-    entrypoint: ["/bin/sh", "-c", "(until ollama list > /dev/null 2>&1; do echo 'Waiting for Ollama...'; sleep 1; done && ollama pull nomic-embed-text) & ollama serve"]
+    entrypoint: ["/bin/sh", "-c", "(until ollama list > /dev/null 2>&1; do echo 'Waiting for Ollama...'; sleep 1; done && ollama pull nomic-embed-text && ollama pull deepseek-r1:1.5b) & ollama serve"]
 
 volumes:
   obsidianragengine-postgres-data:

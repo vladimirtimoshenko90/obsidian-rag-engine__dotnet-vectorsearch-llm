@@ -56,8 +56,11 @@ var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(
 var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
 
 var ollamaUrl = configuration["Ollama:Url"]!;
-var ollamaModel = configuration["Ollama:EmbeddingModel"]!;
-var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaModel);
+var ollamaEmbeddingModel = configuration["Ollama:EmbeddingModel"]!;
+var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaEmbeddingModel);
+
+var ollamaLlmModel = configuration["Ollama:LlmModel"]!;
+var llmService = new OllamaLlmService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaLlmModel);
 
 var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
