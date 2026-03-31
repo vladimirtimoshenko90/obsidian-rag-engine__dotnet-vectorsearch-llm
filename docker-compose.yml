@@ -29,6 +29,17 @@ services:
     ports:
       - "6301:8884"
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: obsidianragengine-ollama
+    restart: unless-stopped
+    ports:
+      - "6302:11434"
+    volumes:
+      - obsidianragengine-ollama-data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c", "(until ollama list > /dev/null 2>&1; do echo 'Waiting for Ollama...'; sleep 1; done && ollama pull nomic-embed-text) & ollama serve"]
+
 volumes:
   obsidianragengine-postgres-data:
   obsidianragengine-qdrant-data:
+  obsidianragengine-ollama-data:

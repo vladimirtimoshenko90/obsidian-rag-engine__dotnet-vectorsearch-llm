@@ -1,6 +1,7 @@
-using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
+﻿using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
+using System.Net.Http.Json;
 
 namespace ObsidianRagEngine.Console.Domain;
 
@@ -41,7 +42,7 @@ public class ObsidianNoteVectorizationService(
             if (upToDate.Contains(chunkText))
                 continue;
 
-            var embedding = await embeddingService.EmbedAsync(chunkText, ct);
+            var embedding = await embeddingService.Embed(chunkText, ct);
 
             await chunkRepo.Create(new ObsidianNoteChunk
             {
@@ -88,5 +89,24 @@ public class TextChunkingService : ITextChunkingService
 public interface IEmbeddingService
 {
     string ModelName { get; }
-    Task<float[]> EmbedAsync(string text, CancellationToken ct = default);
+    Task<float[]> Embed(string text, CancellationToken ct = default);
+}
+
+public class OllamaEmbeddingService(HttpClient httpClient, string modelName) : IEmbeddingService
+{
+    public string ModelName => modelName;
+
+    public async Task<float[]> Embed(string text, CancellationToken ct = default)
+    {
+        var response = await httpClient.PostAsJsonAsync(
+            "/api/embed",
+            new OllamaEmbeddingRequest(modelName, text),
+            ct);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<OllamaEmbeddingResponse>(ct);
+        return result!.Embeddings.First();
+    }
+
+    private sealed record OllamaEmbeddingRequest(string Model, string Input);
+    private sealed record OllamaEmbeddingResponse(float[][] Embeddings);
 }

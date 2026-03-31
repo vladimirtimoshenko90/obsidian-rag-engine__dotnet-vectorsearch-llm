@@ -27,7 +27,7 @@ await db.Database.EnsureCreatedAsync();
 Console.WriteLine("PostgreSQL: connection established and schema ensured.");
 
 // --- Qdrant setup ---
-const uint EmbeddingDimension = 4;
+const uint EmbeddingDimension = 768;
 
 var qdrantUri = new Uri(configuration.GetConnectionString("ObsidianNoteChunks")!);
 
@@ -55,9 +55,13 @@ var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(
 
 var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
 
+var ollamaUrl = configuration["Ollama:Url"]!;
+var ollamaModel = configuration["Ollama:EmbeddingModel"]!;
+var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaModel);
+
 var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
-var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, null!);
+var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
