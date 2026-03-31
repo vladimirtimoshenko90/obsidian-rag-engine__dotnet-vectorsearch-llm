@@ -24,9 +24,9 @@ public class ObsidianNoteVectorizationService(
         var newChunkTexts = await chunkingService.Split(note.TextSanitized, ChunkSize, Overlap);
         var newChunkTextSet = newChunkTexts.ToHashSet();
 
-        // A chunk is stale if its text is no longer needed or it was embedded with a different model.
+        // A chunk is stale if its text is no longer needed.
         var toDelete = existingChunks
-            .Where(c => !newChunkTextSet.Contains(c.Text) || c.EmbeddingModel != embeddingService.ModelName)
+            .Where(c => !newChunkTextSet.Contains(c.Text))
             .ToList();
         foreach (var stale in toDelete)
             await chunkRepo.Delete(stale.Id, ct);
@@ -49,8 +49,7 @@ public class ObsidianNoteVectorizationService(
                 Id = Guid.NewGuid(),
                 NoteId = note.Id,
                 Text = chunkText,
-                Embedding = embedding,
-                EmbeddingModel = embeddingService.ModelName
+                Embedding = embedding
             }, ct);
         }
     }
