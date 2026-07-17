@@ -9,6 +9,8 @@ public interface IImageOcrService
     Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages);
 }
 
+// Client for the docker-hosted Tesseract HTTP OCR server:
+// https://github.com/hertzg/tesseract-server/
 public class TesseractOcrService(HttpClient httpClient) : IImageOcrService
 {
     public string ModelName => "tesseract";
@@ -39,8 +41,15 @@ public class TesseractOcrService(HttpClient httpClient) : IImageOcrService
     private sealed record ExitInfo(int Code, object? Signal);
 }
 
+// Alpine tesseract-ocr-data packages (available language pack IDs):
+// https://pkgs.alpinelinux.org/packages?name=tesseract-ocr-data-*&branch=edge
 public static class TesseractLanguages
 {
-    public const string Russian = "rus";
     public const string English = "eng";
+    public const string German = "deu";
+    public const string French = "fra";
+    public const string Georgian = "kat";
+    public const string Polish = "pol";
+    public const string Russian = "rus";
+    public const string Spanish = "spa";
 }
