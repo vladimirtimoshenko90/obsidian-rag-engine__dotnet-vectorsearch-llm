@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
+using ObsidianRagEngine.Console.Common.Utility;
 using System.Text.RegularExpressions;
 
 namespace ObsidianRagEngine.Console.Domain.Reading;
@@ -68,14 +67,8 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
             FileName = Path.GetFileNameWithoutExtension(filePath),
             FilePath = filePath,
             Content = content,
-            ContentHash = ComputeHash(content),
+            ContentHash = HashUtility.ComputeHash(content),
             ImagePaths = imagePaths
         };
-    }
-
-    private static string ComputeHash(string content)
-    {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
-        return Convert.ToHexStringLower(bytes);
     }
 }
