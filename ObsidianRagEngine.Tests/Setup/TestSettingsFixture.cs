@@ -10,8 +10,7 @@ public sealed class TestSettingsFixture
 {
     public IConfiguration Configuration { get; }
 
-    public string OcrSampleImagePath { get; }
-    public string OcrExpectedText { get; }
+    public IReadOnlyList<OcrTestCase> OcrTestCases { get; }
 
     public string TesseractUrl { get; }
 
@@ -24,9 +23,32 @@ public sealed class TestSettingsFixture
             .AddEnvironmentVariables()
             .Build();
 
-        OcrSampleImagePath = Require("Ocr:SampleImagePath");
-        OcrExpectedText = Require("Ocr:ExpectedText");
         TesseractUrl = Require("Tesseract:Url");
+        OcrTestCases = LoadOcrTestCases();
+
+        if (OcrTestCases.Count == 0)
+            throw new InvalidOperationException("OcrTestCases must contain at least one entry in appsettings.local.json.");
+    }
+
+    private IReadOnlyList<OcrTestCase> LoadOcrTestCases()
+    {
+        var testCases = new List<OcrTestCase>();
+
+        foreach (var child in Configuration.GetSection("OcrTestCases").GetChildren())
+        {
+            var imagePath = child["ImagePath"];
+            var expectedText = child["ExpectedText"];
+
+            if (!imagePath.Valuable() || !expectedText.Valuable())
+            {
+                throw new InvalidOperationException(
+                    "Each OcrTestCases entry requires non-empty ImagePath and ExpectedText.");
+            }
+
+            testCases.Add(new OcrTestCase(imagePath!, expectedText!));
+        }
+
+        return testCases;
     }
 
     private string Require(string key) =>
@@ -34,3 +56,8 @@ public sealed class TestSettingsFixture
             ? Configuration[key]!
             : throw new InvalidOperationException($"Required setting '{key}' is missing or empty.");
 }
+
+/// <summary>
+/// Image under test for OCR: path to the source file and the text expected after recognition.
+/// </summary>
+public sealed record OcrTestCase(string ImagePath, string ExpectedText);

@@ -8,11 +8,16 @@ public class TesseractOllamaServiceTests(TesseractOllamaFixture fixture) : IClas
 {
     private const double MinimumSimilarity = 0.6;
 
-    [Fact]
-    public async Task ExtractText_FromSampleChatScreenshot_MatchesExpectedText()
+    public static IEnumerable<object[]> OcrTestCases =>
+        new TestSettingsFixture().OcrTestCases
+            .Select(testCase => new object[] { testCase.ImagePath, testCase.ExpectedText });
+
+    [Theory]
+    [MemberData(nameof(OcrTestCases))]
+    public async Task ExtractText_FromSampleImage_MatchesExpectedText(string imagePath, string expectedText)
     {
         // Arrange
-        var imageBytes = await File.ReadAllBytesAsync(fixture.Settings.OcrSampleImagePath);
+        var imageBytes = await File.ReadAllBytesAsync(imagePath);
 
         // Act
         var ocredText = await fixture.Sut.ExtractText(
@@ -20,7 +25,7 @@ public class TesseractOllamaServiceTests(TesseractOllamaFixture fixture) : IClas
             [TesseractLanguages.Russian, TesseractLanguages.English]);
 
         // Assert
-        var score = TextComparer.Compare(ocredText, fixture.Settings.OcrExpectedText);
+        var score = TextComparer.Compare(ocredText, expectedText);
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
     }
 }
