@@ -11,6 +11,7 @@ public sealed class TestSettingsFixture
     public IConfiguration Configuration { get; }
 
     public string OcrSampleImagePath { get; }
+    public string OcrExpectedText { get; }
 
     public string TesseractUrl { get; }
 
@@ -24,6 +25,7 @@ public sealed class TestSettingsFixture
             .Build();
 
         OcrSampleImagePath = Require("Ocr:SampleImagePath");
+        OcrExpectedText = Require("Ocr:ExpectedText");
         TesseractUrl = Require("Tesseract:Url");
     }
 
