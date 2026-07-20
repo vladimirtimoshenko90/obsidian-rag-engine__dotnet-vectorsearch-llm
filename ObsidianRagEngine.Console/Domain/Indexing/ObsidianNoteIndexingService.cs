@@ -1,8 +1,10 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
+using ObsidianRagEngine.Console.Domain.Ocr;
+using ObsidianRagEngine.Console.Domain.Reading;
 using System.Text.RegularExpressions;
 
-namespace ObsidianRagEngine.Console.Domain;
+namespace ObsidianRagEngine.Console.Domain.Indexing;
 
 public interface IObsidianNoteIndexingService
 {

@@ -3,7 +3,11 @@ using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain;
+using ObsidianRagEngine.Console.Domain.Indexing;
+using ObsidianRagEngine.Console.Domain.LLM;
+using ObsidianRagEngine.Console.Domain.Ocr;
+using ObsidianRagEngine.Console.Domain.Reading;
+using ObsidianRagEngine.Console.Domain.Vectorization;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
@@ -51,7 +55,7 @@ var noteRepo = new ObsidianNoteRepository(db);
 var imageRepo = new ObsidianImageRepository(db);
 
 var tesseractUrl = configuration["Tesseract:Url"]!;
-var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
+var ocrService = new TesseractOllamaService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
 
 var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
 
@@ -60,7 +64,7 @@ var ollamaEmbeddingModel = configuration["Ollama:EmbeddingModel"]!;
 var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaEmbeddingModel);
 
 var ollamaLlmModel = configuration["Ollama:LlmModel"]!;
-var llmService = new OllamaLlmService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaLlmModel);
+var llmService = new DeepSeekOllamaService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaLlmModel);
 
 var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();

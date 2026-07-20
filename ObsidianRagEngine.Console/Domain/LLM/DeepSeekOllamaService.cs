@@ -1,14 +1,9 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
-namespace ObsidianRagEngine.Console.Domain;
+namespace ObsidianRagEngine.Console.Domain.LLM;
 
-public interface ILlmService
-{
-    Task<string> GenerateResponse(string prompt, CancellationToken ct = default);
-}
-
-public class OllamaLlmService(HttpClient httpClient, string modelName) : ILlmService
+public class DeepSeekOllamaService(HttpClient httpClient, string modelName) : ILlmService
 {
     public async Task<string> GenerateResponse(string prompt, CancellationToken ct = default)
     {

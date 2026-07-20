@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ObsidianRagEngine.Console.Domain;
+namespace ObsidianRagEngine.Console.Domain.Reading;
 
 public interface IObsidianRepositoryReader
 {
@@ -78,19 +78,4 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content));
         return Convert.ToHexStringLower(bytes);
     }
-}
-
-public class NoteFileInfo
-{
-    public required string FileName { get; init; }
-    public required string FilePath { get; init; }
-}
-
-public class NoteFileData
-{
-    public required string FileName { get; init; }
-    public required string FilePath { get; init; }
-    public required string Content { get; init; }
-    public required string ContentHash { get; init; }
-    public required IReadOnlyList<string> ImagePaths { get; init; }
 }
