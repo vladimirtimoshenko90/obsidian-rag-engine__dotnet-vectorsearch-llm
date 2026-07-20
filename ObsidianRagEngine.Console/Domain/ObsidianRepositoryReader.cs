@@ -52,14 +52,16 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
 
     public async Task<NoteFileData> ReadNote(string filePath)
     {
+        var attachmentsPath = Path.Combine(repositoryPath, attachmentsFolder);
+
         var content = await File.ReadAllTextAsync(filePath);
 
         var imagePaths = ImagePattern.Matches(content)
             .Select(m => m.Groups[1].Value)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(ResolveImagePath)
-            .Where(path => path is not null)
-            .ToList()!;
+            .Select(imageFileName => Path.Combine(attachmentsPath, Path.GetFileName(imageFileName)))
+            .Where(File.Exists)
+            .ToList();
 
         return new NoteFileData
         {
@@ -67,15 +69,8 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
             FilePath = filePath,
             Content = content,
             ContentHash = ComputeHash(content),
-            ImagePaths = imagePaths!
+            ImagePaths = imagePaths
         };
-    }
-
-    private string? ResolveImagePath(string imageFileName)
-    {
-        return Directory
-            .EnumerateFiles(repositoryPath, imageFileName, SearchOption.AllDirectories)
-            .FirstOrDefault();
     }
 
     private static string ComputeHash(string content)
