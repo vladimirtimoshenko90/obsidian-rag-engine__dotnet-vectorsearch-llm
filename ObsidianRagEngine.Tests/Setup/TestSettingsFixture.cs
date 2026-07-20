@@ -8,6 +8,9 @@ namespace ObsidianRagEngine.Tests.Setup;
 /// </summary>
 public sealed class TestSettingsFixture
 {
+    private static readonly HashSet<string> ImageExtensions =
+        new(StringComparer.OrdinalIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp" };
+
     public IConfiguration Configuration { get; }
 
     public IReadOnlyList<OcrTestCase> OcrTestCases { get; }
@@ -19,7 +22,6 @@ public sealed class TestSettingsFixture
         Configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile("appsettings.local.json", optional: false)
             .AddEnvironmentVariables()
             .Build();
 
@@ -27,25 +29,39 @@ public sealed class TestSettingsFixture
         OcrTestCases = LoadOcrTestCases();
 
         if (OcrTestCases.Count == 0)
-            throw new InvalidOperationException("OcrTestCases must contain at least one entry in appsettings.local.json.");
+        {
+            throw new InvalidOperationException(
+                "No OCR test cases found. Add folders under ___testdata/ocr/<case>/ with an image and expected.txt.");
+        }
     }
 
     private IReadOnlyList<OcrTestCase> LoadOcrTestCases()
     {
+        var root = Path.Combine(AppContext.BaseDirectory, "___testdata", "ocr");
+        if (!Directory.Exists(root))
+            return [];
+
         var testCases = new List<OcrTestCase>();
 
-        foreach (var child in Configuration.GetSection("OcrTestCases").GetChildren())
+        foreach (var caseDir in Directory.EnumerateDirectories(root))
         {
-            var imagePath = child["ImagePath"];
-            var expectedText = child["ExpectedText"];
-
-            if (!imagePath.Valuable() || !expectedText.Valuable())
+            var expectedPath = Path.Combine(caseDir, "expected.txt");
+            if (!File.Exists(expectedPath))
             {
                 throw new InvalidOperationException(
-                    "Each OcrTestCases entry requires non-empty ImagePath and ExpectedText.");
+                    $"OCR test case '{Path.GetFileName(caseDir)}' is missing expected.txt.");
             }
 
-            testCases.Add(new OcrTestCase(imagePath!, expectedText!));
+            var imagePath = Directory.EnumerateFiles(caseDir)
+                .SingleOrDefault(path => ImageExtensions.Contains(Path.GetExtension(path)));
+
+            if (imagePath is null)
+            {
+                throw new InvalidOperationException(
+                    $"OCR test case '{Path.GetFileName(caseDir)}' must contain exactly one image file.");
+            }
+
+            testCases.Add(new OcrTestCase(imagePath, File.ReadAllText(expectedPath)));
         }
 
         return testCases;
