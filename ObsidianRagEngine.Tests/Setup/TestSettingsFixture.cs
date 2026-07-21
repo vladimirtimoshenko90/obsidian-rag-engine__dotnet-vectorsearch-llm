@@ -18,6 +18,9 @@ public sealed class TestSettingsFixture
 
     public string TesseractUrl { get; }
 
+    public string OllamaUrl { get; }
+    public string OllamaLlmModel { get; }
+
     public TestSettingsFixture()
     {
         Configuration = new ConfigurationBuilder()
@@ -27,6 +30,8 @@ public sealed class TestSettingsFixture
             .Build();
 
         TesseractUrl = Require("Tesseract:Url");
+        OllamaUrl = Require("Ollama:Url");
+        OllamaLlmModel = Require("Ollama:LlmModel");
         OcrTestCases = LoadOcrTestCases();
 
         if (OcrTestCases.Count == 0)
@@ -75,7 +80,7 @@ public sealed class TestSettingsFixture
             "___testdata", "ocr", testCase.CaseName));
 
         File.WriteAllText(
-            Path.Combine(caseFolder, "actual.txt"), 
+            Path.Combine(caseFolder, "actual.txt"),
             actualText);
 
         File.WriteAllText(

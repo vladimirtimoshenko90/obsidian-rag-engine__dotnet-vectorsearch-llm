@@ -5,7 +5,7 @@ using ObsidianRagEngine.Tests.Setup;
 
 namespace ObsidianRagEngine.Tests.Ocr;
 
-public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
+public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
 {
     private const double MinimumSimilarity = 0.6;
 
@@ -21,7 +21,7 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
 
         // Act
-        var ocredText = await fixture.Tesseract.ExtractText(
+        var ocredText = await fixture.MessengerScreenshot.ExtractText(
             imageBytes,
             [TesseractLanguages.Russian, TesseractLanguages.English],
             CancellationToken.None);
