@@ -2,7 +2,7 @@ using System.Buffers;
 using System.Globalization;
 using System.Text;
 
-namespace ObsidianRagEngine.Tests.Domain.Ocr;
+namespace ObsidianRagEngine.Tests.Ocr.Helpers;
 
 /// <summary>
 /// Normalized Levenshtein similarity in [0, 1] after stripping punctuation/emoji/symbols

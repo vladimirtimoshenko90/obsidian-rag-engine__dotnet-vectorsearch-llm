@@ -1,8 +1,9 @@
 using FluentAssertions;
 using ObsidianRagEngine.Ocr.Tesseract;
+using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 
-namespace ObsidianRagEngine.Tests.Domain.Ocr;
+namespace ObsidianRagEngine.Tests.Ocr;
 
 public class TesseractOllamaServiceTests(TesseractOllamaFixture fixture) : IClassFixture<TesseractOllamaFixture>
 {
