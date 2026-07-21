@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
-namespace ObsidianRagEngine.Console.Domain.LLM;
+namespace ObsidianRagEngine.Llm.DeepSeekOllama;
 
 public class DeepSeekOllamaService(HttpClient httpClient, string modelName) : ILlmService
 {

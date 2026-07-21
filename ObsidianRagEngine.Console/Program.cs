@@ -4,11 +4,10 @@ using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain.Indexing;
-using ObsidianRagEngine.Console.Domain.LLM;
-using ObsidianRagEngine.Ocr;
-using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Console.Domain.Vectorization;
+using ObsidianRagEngine.Llm.DeepSeekOllama;
+using ObsidianRagEngine.Ocr.Tesseract;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 

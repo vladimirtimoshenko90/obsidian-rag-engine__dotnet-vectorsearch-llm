@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Console.Domain.LLM;
+namespace ObsidianRagEngine.Llm;
 
 public interface ILlmService
 {

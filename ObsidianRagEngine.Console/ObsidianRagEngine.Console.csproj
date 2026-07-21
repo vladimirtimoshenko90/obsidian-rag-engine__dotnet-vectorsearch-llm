@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj" />
+    <ProjectReference Include="..\ObsidianRagEngine.Llm\ObsidianRagEngine.Llm.csproj" />
   </ItemGroup>
 
 </Project>
