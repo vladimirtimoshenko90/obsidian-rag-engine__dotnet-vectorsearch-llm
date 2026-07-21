@@ -73,20 +73,28 @@ public sealed class TestSettingsFixture
         return testCases;
     }
 
-    public void SaveOcrResult(OcrTestCase testCase, string actualText, double score)
+    public void SaveOcrResult(OcrTestCase testCase, string ocrModel, string actualText, double score)
     {
         var caseFolder = Path.GetFullPath(Path.Combine(
             AppContext.BaseDirectory, "..", "..", "..",
             "___testdata", "ocr", testCase.CaseName));
 
+        var modelFolder = Path.Combine(caseFolder, SanitizeModelName(ocrModel));
+        if (Directory.Exists(modelFolder))
+            Directory.Delete(modelFolder, recursive: true);
+        Directory.CreateDirectory(modelFolder);
+
         File.WriteAllText(
-            Path.Combine(caseFolder, "actual.txt"),
+            Path.Combine(modelFolder, "actual.txt"),
             actualText);
 
         File.WriteAllText(
-            Path.Combine(caseFolder, "results.json"),
+            Path.Combine(modelFolder, "results.json"),
             JsonSerializer.Serialize(new { score }, new JsonSerializerOptions { WriteIndented = true }));
     }
+
+    private static string SanitizeModelName(string ocrModel) =>
+        string.Join("_", ocrModel.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
 
     private string Require(string key) =>
         Configuration[key].Valuable()

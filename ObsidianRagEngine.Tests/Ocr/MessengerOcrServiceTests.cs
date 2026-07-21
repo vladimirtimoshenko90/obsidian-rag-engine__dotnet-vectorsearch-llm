@@ -28,7 +28,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
-        fixture.Settings.SaveOcrResult(testCase, ocredText, score);
+        fixture.Settings.SaveOcrResult(testCase, fixture.MessengerScreenshot.ModelName, ocredText, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);

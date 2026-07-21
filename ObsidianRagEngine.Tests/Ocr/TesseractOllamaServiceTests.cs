@@ -28,7 +28,7 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
-        fixture.Settings.SaveOcrResult(testCase, ocredText, score);
+        fixture.Settings.SaveOcrResult(testCase, fixture.Tesseract.ModelName, ocredText, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
