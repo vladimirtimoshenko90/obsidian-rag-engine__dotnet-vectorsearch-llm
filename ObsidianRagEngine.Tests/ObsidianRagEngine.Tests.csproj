@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ObsidianRagEngine.Console\ObsidianRagEngine.Console.csproj" />
+    <ProjectReference Include="..\ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj" />
   </ItemGroup>
 
   <ItemGroup>

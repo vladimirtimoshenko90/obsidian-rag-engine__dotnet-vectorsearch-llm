@@ -1,6 +1,7 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain.Ocr;
+using ObsidianRagEngine.Ocr;
+using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Console.Domain.Reading;
 using System.Text.RegularExpressions;
 
@@ -14,7 +15,7 @@ public interface IObsidianNoteIndexingService
 public class ObsidianNoteIndexingService(
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
-    IImageOcrService ocrService) : IObsidianNoteIndexingService
+    IOcrService ocrService) : IObsidianNoteIndexingService
 {
     public async Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {

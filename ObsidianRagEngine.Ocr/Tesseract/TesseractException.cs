@@ -1,6 +1,4 @@
-using ObsidianRagEngine.Console.Common.Extensions;
-
-namespace ObsidianRagEngine.Console.Domain.Ocr;
+namespace ObsidianRagEngine.Ocr.Tesseract;
 
 public class TesseractException : Exception
 {
@@ -17,5 +15,5 @@ public class TesseractException : Exception
     }
 
     private static string BuildMessage(string message, string? stderr) =>
-        stderr.Valuable() ? $"{message} Stderr: {stderr!.Trim()}" : message;
+        string.IsNullOrWhiteSpace(stderr) ? message : $"{message} Stderr: {stderr.Trim()}";
 }

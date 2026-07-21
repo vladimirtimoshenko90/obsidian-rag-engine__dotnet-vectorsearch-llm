@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ObsidianRagEngine.Console.Domain.Ocr;
+using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Tests.Setup;
 
 namespace ObsidianRagEngine.Tests.Domain.Ocr;

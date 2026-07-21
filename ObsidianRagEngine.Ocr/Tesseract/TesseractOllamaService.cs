@@ -1,19 +1,13 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace ObsidianRagEngine.Console.Domain.Ocr;
-
-public interface IImageOcrService
-{
-    string ModelName { get; }
-    Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages);
-}
+namespace ObsidianRagEngine.Ocr.Tesseract;
 
 /// <summary>
 /// Client for the docker-hosted Tesseract HTTP OCR server:
 /// https://github.com/hertzg/tesseract-server/
 /// </summary>
-public class TesseractOllamaService(HttpClient httpClient) : IImageOcrService
+public class TesseractOllamaService(HttpClient httpClient) : IOcrService
 {
     public string ModelName => "tesseract";
 

@@ -9,6 +9,8 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Tests", "ObsidianRagEngine.Tests\ObsidianRagEngine.Tests.csproj", "{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Ocr", "ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj", "{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,18 @@ Global
 		{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}.Release|x64.Build.0 = Release|Any CPU
 		{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}.Release|x86.ActiveCfg = Release|Any CPU
 		{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}.Release|x86.Build.0 = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|x64.Build.0 = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Debug|x86.Build.0 = Debug|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|x64.ActiveCfg = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|x64.Build.0 = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|x86.ActiveCfg = Release|Any CPU
+		{9F9D95A3-C23F-4705-AB88-EFAFCE12A5B5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

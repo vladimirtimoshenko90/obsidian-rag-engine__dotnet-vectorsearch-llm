@@ -1,4 +1,4 @@
-using ObsidianRagEngine.Console.Domain.Ocr;
+using ObsidianRagEngine.Ocr.Tesseract;
 
 namespace ObsidianRagEngine.Tests.Setup;
 
