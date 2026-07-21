@@ -39,7 +39,8 @@ public class ObsidianNoteIndexingService(
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
                 var extractedText = await ocrService.ExtractText(
                     imageBytes,
-                    [TesseractLanguages.Russian, TesseractLanguages.English]);
+                    [TesseractLanguages.Russian, TesseractLanguages.English],
+                    ct);
 
                 ocrResult = await noteImageRepo.Create(new ObsidianImage
                 {

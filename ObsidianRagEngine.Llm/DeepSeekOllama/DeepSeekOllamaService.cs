@@ -5,7 +5,7 @@ namespace ObsidianRagEngine.Llm.DeepSeekOllama;
 
 public class DeepSeekOllamaService(HttpClient httpClient, string modelName) : ILlmService
 {
-    public async Task<string> Generate(string prompt, CancellationToken ct = default)
+    public async Task<string> Generate(string prompt, CancellationToken ct)
     {
         var response = await httpClient.PostAsJsonAsync(
             "/api/generate",

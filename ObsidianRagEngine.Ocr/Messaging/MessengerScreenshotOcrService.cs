@@ -9,10 +9,10 @@ public sealed class MessengerScreenshotOcrService(
     MessengerPanelNormalizer normalizer,
     IMessengerTranscriptMerger merger) : IOcrService
 {
-    // Distinct from raw "tesseract" so cached OCR rows are not reused after the pipeline change.
-    public string ModelName => "tesseract-messenger";
+    // Distinct from raw OCR cache keys: "{base}-messenger".
+    public string ModelName => $"{ocr.ModelName}-messenger";
 
-    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages)
+    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages, CancellationToken ct)
     {
         // Side-by-side composites become one crop per phone panel (or the whole image if no seams).
         var panels = splitter.Split(imageBytes);
@@ -22,11 +22,11 @@ public sealed class MessengerScreenshotOcrService(
         {
             // Dark UI / colored bubbles → dark text on a light background for Tesseract.
             var normalized = normalizer.Normalize(panel);
-            texts.Add(await ocr.ExtractText(normalized, languages));
+            texts.Add(await ocr.ExtractText(normalized, languages, ct));
         }
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
-        var transcript = await merger.MergeAsync(texts);
+        var transcript = await merger.MergeAsync(texts, ct);
         return transcript;
     }
 }

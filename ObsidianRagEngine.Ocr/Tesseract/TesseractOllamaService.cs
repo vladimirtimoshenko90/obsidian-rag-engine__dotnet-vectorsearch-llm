@@ -11,7 +11,7 @@ public class TesseractOllamaService(HttpClient httpClient) : IOcrService
 {
     public string ModelName => "tesseract";
 
-    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages)
+    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages, CancellationToken ct)
     {
         var optionsJson = JsonSerializer.Serialize(new
         {
@@ -25,10 +25,10 @@ public class TesseractOllamaService(HttpClient httpClient) : IOcrService
             { new StringContent(optionsJson), "options" }
         };
 
-        var response = await httpClient.PostAsync("/tesseract", content);
+        var response = await httpClient.PostAsync("/tesseract", content, ct);
         response.EnsureSuccessStatusCode();
 
-        var wrapper = await response.Content.ReadFromJsonAsync<TesseractWrapper>();
+        var wrapper = await response.Content.ReadFromJsonAsync<TesseractWrapper>(ct);
         var data = wrapper?.Data
             ?? throw new TesseractException("Tesseract response was empty or malformed.");
 

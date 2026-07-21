@@ -8,7 +8,7 @@ namespace ObsidianRagEngine.Ocr.Messaging;
 /// </summary>
 public interface IMessengerTranscriptMerger
 {
-    Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct = default);
+    Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct);
 }
 
 /// <summary>
@@ -65,7 +65,7 @@ public sealed class MessengerTranscriptMerger(ILlmService llm) : IMessengerTrans
         Return only the cleaned transcript, with no commentary.
         """;
 
-    public async Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct = default)
+    public async Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(panelTexts);
 

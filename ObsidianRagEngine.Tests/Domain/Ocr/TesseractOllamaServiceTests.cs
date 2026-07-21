@@ -22,7 +22,8 @@ public class TesseractOllamaServiceTests(TesseractOllamaFixture fixture) : IClas
         // Act
         var ocredText = await fixture.Sut.ExtractText(
             imageBytes,
-            [TesseractLanguages.Russian, TesseractLanguages.English]);
+            [TesseractLanguages.Russian, TesseractLanguages.English],
+            CancellationToken.None);
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
