@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Common.Extensions;
+using System.Text.Json;
 
 namespace ObsidianRagEngine.Tests.Setup;
 
@@ -67,6 +68,21 @@ public sealed class TestSettingsFixture
         return testCases;
     }
 
+    public void SaveOcrResult(OcrTestCase testCase, string actualText, double score)
+    {
+        var caseFolder = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..",
+            "___testdata", "ocr", testCase.CaseName));
+
+        File.WriteAllText(
+            Path.Combine(caseFolder, "actual.txt"), 
+            actualText);
+
+        File.WriteAllText(
+            Path.Combine(caseFolder, "results.json"),
+            JsonSerializer.Serialize(new { score }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
     private string Require(string key) =>
         Configuration[key].Valuable()
             ? Configuration[key]!
@@ -76,4 +92,7 @@ public sealed class TestSettingsFixture
 /// <summary>
 /// Image under test for OCR: path to the source file and the text expected after recognition.
 /// </summary>
-public sealed record OcrTestCase(string ImagePath, string ExpectedText);
+public sealed record OcrTestCase(string ImagePath, string ExpectedText)
+{
+    public string CaseName => Path.GetFileName(Path.GetDirectoryName(ImagePath)!);
+}

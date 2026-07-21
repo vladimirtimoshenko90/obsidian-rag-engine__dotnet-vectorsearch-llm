@@ -10,22 +10,25 @@ public class TesseractOllamaServiceTests(TesseractOllamaFixture fixture) : IClas
 
     public static IEnumerable<object[]> OcrTestCases =>
         new TestSettingsFixture().OcrTestCases
-            .Select(testCase => new object[] { testCase.ImagePath, testCase.ExpectedText });
+            .Select(testCase => new object[] { testCase });
 
     [Theory]
     [MemberData(nameof(OcrTestCases))]
-    public async Task ExtractText_FromSampleImage_MatchesExpectedText(string imagePath, string expectedText)
+    public async Task ExtractText_FromSampleImage_MatchesExpectedText(OcrTestCase testCase)
     {
         // Arrange
-        var imageBytes = await File.ReadAllBytesAsync(imagePath);
+        var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
 
         // Act
         var ocredText = await fixture.Sut.ExtractText(
             imageBytes,
             [TesseractLanguages.Russian, TesseractLanguages.English]);
 
+        var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
+
+        fixture.Settings.SaveOcrResult(testCase, ocredText, score);
+
         // Assert
-        var score = TextComparer.Compare(ocredText, expectedText);
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
     }
 }
