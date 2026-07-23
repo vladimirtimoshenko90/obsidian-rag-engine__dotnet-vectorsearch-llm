@@ -7,7 +7,7 @@ namespace ObsidianRagEngine.Ocr.Tesseract;
 /// Client for the docker-hosted Tesseract HTTP OCR server:
 /// https://github.com/hertzg/tesseract-server/
 /// </summary>
-public class TesseractOllamaService(HttpClient httpClient) : IOcrService
+public class TesseractOcrService(HttpClient httpClient) : IOcrService
 {
     public string ModelName => "tesseract";
 

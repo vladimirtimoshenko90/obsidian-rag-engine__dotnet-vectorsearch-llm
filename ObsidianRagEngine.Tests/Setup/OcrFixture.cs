@@ -11,7 +11,7 @@ public sealed class OcrFixture : IDisposable
 {
     public TestSettingsFixture Settings { get; } = new();
 
-    public TesseractOllamaService Tesseract { get; }
+    public TesseractOcrService Tesseract { get; }
 
     public MessengerScreenshotOcrService MessengerScreenshot { get; }
 
@@ -34,7 +34,7 @@ public sealed class OcrFixture : IDisposable
 
         var llm = new DeepSeekOllamaService(_ollamaHttpClient, Settings.OllamaLlmModel);
 
-        Tesseract = new TesseractOllamaService(_tesseractHttpClient);
+        Tesseract = new TesseractOcrService(_tesseractHttpClient);
 
         MessengerScreenshot = new MessengerScreenshotOcrService(
             Tesseract,

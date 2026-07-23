@@ -55,7 +55,7 @@ var noteRepo = new ObsidianNoteRepository(db);
 var imageRepo = new ObsidianImageRepository(db);
 
 var tesseractUrl = configuration["Tesseract:Url"]!;
-var ocrService = new TesseractOllamaService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
+var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
 
 var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
 
