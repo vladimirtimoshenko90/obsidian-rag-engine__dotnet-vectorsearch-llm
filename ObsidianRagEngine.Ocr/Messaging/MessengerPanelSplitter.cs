@@ -6,16 +6,16 @@ namespace ObsidianRagEngine.Ocr.Messaging;
 
 /// <summary>
 /// Splits a side-by-side messenger screenshot composite into individual panel images
-/// by detecting narrow vertical gutters (seams).
+/// by detecting low-contrast vertical seams (skipping header/footer chrome).
 /// </summary>
 public sealed class MessengerPanelSplitter
 {
+    private const float TopSkipFraction = 0.20f;
+    private const float BottomSkipFraction = 0.05f;
+    private const float TailPercentile = 0.05f;
     private const int SmoothWindow = 5;
-    private const int MinGutterWidth = 1;
-    private const int MaxGutterWidth = 10;
     private const int EdgeMarginPx = 8;
     private const float MinPanelWidthFraction = 0.12f;
-    private const float BusyQuietFraction = 0.35f;
 
     /// <summary>
     /// Crops <paramref name="imageBytes"/> into left-to-right panel PNGs.
@@ -66,53 +66,16 @@ public sealed class MessengerPanelSplitter
         if (width < 32 || height < 32)
             return [0, width];
 
-        var busy = new float[width];
-        var brightness = new float[width];
+        var yFrom = (int)(height * TopSkipFraction);
+        var yTo = (int)(height * (1f - BottomSkipFraction));
+        if (yTo - yFrom < 16)
+            return [0, width];
 
-        image.ProcessPixelRows(accessor =>
-        {
-            for (var y = 0; y < height; y++)
-            {
-                var row = accessor.GetRowSpan(y);
-                Span<Rgba32> nextRow = default;
-                var hasNext = y + 1 < height;
-                if (hasNext)
-                    nextRow = accessor.GetRowSpan(y + 1);
-
-                for (var x = 0; x < width; x++)
-                {
-                    var g = ToGray(row[x]);
-                    brightness[x] += g;
-                    if (hasNext)
-                        busy[x] += Math.Abs(g - ToGray(nextRow[x]));
-                }
-            }
-        });
-
-        var invH = 1f / height;
-        var invHBusy = height > 1 ? 1f / (height - 1) : 1f;
-        for (var x = 0; x < width; x++)
-        {
-            brightness[x] *= invH;
-            busy[x] *= invHBusy;
-        }
-
-        NormalizeInPlace(busy);
-        var gradient = new float[width];
-        for (var x = 1; x < width - 1; x++)
-            gradient[x] = Math.Abs(brightness[x + 1] - brightness[x - 1]) * 0.5f;
-        gradient[0] = gradient[1];
-        gradient[width - 1] = gradient[width - 2];
-        NormalizeInPlace(gradient);
-
-        var combined = new float[width];
-        for (var x = 0; x < width; x++)
-            combined[x] = busy[x] * 0.6f + (1f - gradient[x]) * 0.4f;
-
-        var smoothed = MovingAverage(combined, SmoothWindow);
+        var contrast = ComputeColumnContrast(image, yFrom, yTo);
+        var smoothed = MovingAverage(contrast, SmoothWindow);
 
         var minPanelWidth = Math.Max(24, (int)(width * MinPanelWidthFraction));
-        var gutters = FindGutterCenters(smoothed, busy, width, minPanelWidth);
+        var gutters = FindGutterCenters(smoothed, width, minPanelWidth);
 
         var cuts = new List<int> { 0 };
         cuts.AddRange(gutters);
@@ -120,99 +83,126 @@ public sealed class MessengerPanelSplitter
         return cuts;
     }
 
-    private static List<int> FindGutterCenters(float[] score, float[] busy, int width, int minPanelWidth)
+    /// <summary>
+    /// Per column: contrast between the lightest 5% and darkest 5% of pixels
+    /// in the vertical band (header/footer already excluded).
+    /// </summary>
+    private static float[] ComputeColumnContrast(Image<Rgba32> image, int yFrom, int yTo)
     {
-        var busyMean = busy.Average();
-        var busyQuiet = Math.Max(0.05f, busyMean * BusyQuietFraction);
+        var width = image.Width;
+        var bandHeight = yTo - yFrom;
+        var bands = new float[width][];
+        for (var x = 0; x < width; x++)
+            bands[x] = new float[bandHeight];
 
-        var candidateRuns = new List<(int Start, int End)>();
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = yFrom; y < yTo; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                var yi = y - yFrom;
+                for (var x = 0; x < width; x++)
+                    bands[x][yi] = ToGray(row[x]);
+            }
+        });
+
+        var contrast = new float[width];
+        var tailCount = Math.Max(1, (int)(bandHeight * TailPercentile));
+        for (var x = 0; x < width; x++)
+        {
+            var column = bands[x];
+            Array.Sort(column);
+
+            float darkSum = 0;
+            float lightSum = 0;
+            for (var t = 0; t < tailCount; t++)
+            {
+                darkSum += column[t];
+                lightSum += column[bandHeight - 1 - t];
+            }
+
+            contrast[x] = (lightSum - darkSum) / tailCount;
+        }
+
+        return contrast;
+    }
+
+    private static List<int> FindGutterCenters(float[] contrast, int width, int minPanelWidth)
+    {
+        // Low-contrast runs are valley candidates (margins + seams). Pick the flattest
+        // column in each run so wide plateaus still cut near the true border.
+        var threshold = contrast.Average() * 0.45f;
+
+        var runs = new List<(int Start, int End)>();
         var inRun = false;
         var runStart = 0;
 
         for (var x = EdgeMarginPx; x < width - EdgeMarginPx; x++)
         {
-            var quiet = busy[x] <= busyQuiet;
-            if (quiet && !inRun)
+            var low = contrast[x] <= threshold;
+            if (low && !inRun)
             {
                 inRun = true;
                 runStart = x;
             }
-            else if (!quiet && inRun)
+            else if (!low && inRun)
             {
                 inRun = false;
-                MaybeAddRun(candidateRuns, runStart, x - 1);
+                runs.Add((runStart, x - 1));
             }
         }
 
         if (inRun)
-            MaybeAddRun(candidateRuns, runStart, width - EdgeMarginPx - 1);
+            runs.Add((runStart, width - EdgeMarginPx - 1));
 
-        // Prefer local minima of combined score within each narrow quiet run
         var centers = new List<int>();
-        foreach (var (start, end) in candidateRuns)
+        foreach (var (start, end) in runs)
         {
-            var bestX = start;
-            var bestScore = score[start];
+            var best = contrast[start];
+            var bestFrom = start;
+            var bestTo = start;
             for (var x = start; x <= end; x++)
             {
-                if (score[x] < bestScore)
+                if (contrast[x] < best)
                 {
-                    bestScore = score[x];
-                    bestX = x;
+                    best = contrast[x];
+                    bestFrom = x;
+                    bestTo = x;
+                }
+                else if (contrast[x] == best)
+                {
+                    bestTo = x;
                 }
             }
 
-            centers.Add(bestX);
+            centers.Add((bestFrom + bestTo) / 2);
         }
 
-        // Enforce minimum panel spacing: keep lowest-score gutters when too close
         centers.Sort();
         var filtered = new List<int>();
         foreach (var c in centers)
         {
+            if (c < minPanelWidth || width - c < minPanelWidth)
+                continue;
+
             if (filtered.Count == 0)
             {
-                if (c >= minPanelWidth && width - c >= minPanelWidth)
-                    filtered.Add(c);
+                filtered.Add(c);
                 continue;
             }
 
             var prev = filtered[^1];
             if (c - prev < minPanelWidth)
             {
-                // Keep the quieter (lower score) of the two
-                if (score[c] < score[prev])
+                if (contrast[c] < contrast[prev])
                     filtered[^1] = c;
                 continue;
             }
 
-            if (width - c >= minPanelWidth)
-                filtered.Add(c);
+            filtered.Add(c);
         }
 
         return filtered;
-
-        static void MaybeAddRun(List<(int Start, int End)> runs, int start, int end)
-        {
-            var w = end - start + 1;
-            if (w is >= MinGutterWidth and <= MaxGutterWidth)
-                runs.Add((start, end));
-        }
-    }
-
-    private static void NormalizeInPlace(float[] values)
-    {
-        var min = values.Min();
-        var max = values.Max();
-        var range = max - min;
-        if (range < 1e-6f)
-        {
-            Array.Fill(values, 0.5f);
-            return;
-        }
-
-        for (var i = 0; i < values.Length; i++)
-            values[i] = (values[i] - min) / range;
     }
 
     private static float[] MovingAverage(float[] values, int window)
