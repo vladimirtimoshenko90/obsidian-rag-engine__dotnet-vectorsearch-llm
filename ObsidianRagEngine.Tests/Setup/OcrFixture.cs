@@ -45,6 +45,7 @@ public sealed class OcrFixture : IDisposable
 
     public void Dispose()
     {
+        TestSettingsFixture.ConsolidateOcrResults();
         _tesseractHttpClient.Dispose();
         _ollamaHttpClient.Dispose();
     }
