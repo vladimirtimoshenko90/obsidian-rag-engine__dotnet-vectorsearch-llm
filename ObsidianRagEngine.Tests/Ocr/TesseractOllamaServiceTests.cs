@@ -20,15 +20,18 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
         // Arrange
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
 
+        var sut = fixture.Tesseract;
+        fixture.Settings.ResetOcrResultFolder(testCase, sut.ModelName);
+
         // Act
-        var ocredText = await fixture.Tesseract.ExtractText(
+        var ocredText = await sut.ExtractText(
             imageBytes,
             [TesseractLanguages.Russian, TesseractLanguages.English],
             CancellationToken.None);
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
-        fixture.Settings.SaveOcrResult(testCase, fixture.Tesseract.ModelName, ocredText, score);
+        fixture.Settings.SaveOcrResult(testCase, sut.ModelName, ocredText, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);

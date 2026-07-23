@@ -73,24 +73,50 @@ public sealed class TestSettingsFixture
         return testCases;
     }
 
+    public void ResetOcrResultFolder(OcrTestCase testCase, string ocrModel)
+    {
+        var modelResultsFolder = GetModelResultsFolder(testCase, ocrModel);
+        if (Directory.Exists(modelResultsFolder))
+            Directory.Delete(modelResultsFolder, recursive: true);
+        Directory.CreateDirectory(modelResultsFolder);
+    }
+
     public void SaveOcrResult(OcrTestCase testCase, string ocrModel, string actualText, double score)
+    {
+        var modelResultsFolder = GetModelResultsFolder(testCase, ocrModel);
+
+        File.WriteAllText(
+            Path.Combine(modelResultsFolder, "actual.txt"), 
+            actualText);
+        File.WriteAllText(
+            Path.Combine(modelResultsFolder, "results.json"),
+            JsonSerializer.Serialize(new { score }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    public void SavePanelOcrResult(
+        OcrTestCase testCase,
+        string ocrModel,
+        byte[] rawPanel,
+        byte[] normalizedPanel,
+        string text)
+    {
+        var modelResultsFolder = GetModelResultsFolder(testCase, ocrModel);
+
+        var panelDir = Path.Combine(modelResultsFolder, $"{Directory.GetDirectories(modelResultsFolder).Length:D2}");
+        Directory.CreateDirectory(panelDir);
+
+        File.WriteAllBytes(Path.Combine(panelDir, "raw.png"), rawPanel);
+        File.WriteAllBytes(Path.Combine(panelDir, "normalized.png"), normalizedPanel);
+        File.WriteAllText(Path.Combine(panelDir, "ocr.txt"), text);
+    }
+
+    private static string GetModelResultsFolder(OcrTestCase testCase, string ocrModel)
     {
         var caseFolder = Path.GetFullPath(Path.Combine(
             AppContext.BaseDirectory, "..", "..", "..",
             "___testdata", "ocr", testCase.CaseName));
 
-        var modelFolder = Path.Combine(caseFolder, SanitizeModelName(ocrModel));
-        if (Directory.Exists(modelFolder))
-            Directory.Delete(modelFolder, recursive: true);
-        Directory.CreateDirectory(modelFolder);
-
-        File.WriteAllText(
-            Path.Combine(modelFolder, "actual.txt"),
-            actualText);
-
-        File.WriteAllText(
-            Path.Combine(modelFolder, "results.json"),
-            JsonSerializer.Serialize(new { score }, new JsonSerializerOptions { WriteIndented = true }));
+        return Path.Combine(caseFolder, SanitizeModelName(ocrModel));
     }
 
     private static string SanitizeModelName(string ocrModel) =>

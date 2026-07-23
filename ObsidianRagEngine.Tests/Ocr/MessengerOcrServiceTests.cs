@@ -1,4 +1,5 @@
 using FluentAssertions;
+using ObsidianRagEngine.Ocr.Messaging;
 using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
@@ -19,16 +20,24 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
     {
         // Arrange
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
+        
+        var sut = fixture.MessengerScreenshot;
+        fixture.Settings.ResetOcrResultFolder(testCase, sut.ModelName);
 
         // Act
-        var ocredText = await fixture.MessengerScreenshot.ExtractText(
+        var ocredText = await sut.ExtractText(
             imageBytes,
             [TesseractLanguages.Russian, TesseractLanguages.English],
-            CancellationToken.None);
+            CancellationToken.None,
+            new MessengerOcrCallbacks
+            {
+                OnPanelOcr = (raw, normalized, text) =>
+                    fixture.Settings.SavePanelOcrResult(testCase, sut.ModelName, raw, normalized, text)
+            });
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
-        fixture.Settings.SaveOcrResult(testCase, fixture.MessengerScreenshot.ModelName, ocredText, score);
+        fixture.Settings.SaveOcrResult(testCase, sut.ModelName, ocredText, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
