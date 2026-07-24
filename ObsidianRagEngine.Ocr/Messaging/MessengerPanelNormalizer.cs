@@ -22,10 +22,10 @@ public sealed class MessengerPanelNormalizer
     private const float BubbleTextLuminanceMin = 0.55f;
 
     /// <summary>
-    /// HSV hue band (degrees) for violet / purple / magenta bubble fills
-    /// Excludes UI blues (~210°).
+    /// HSV hue band (degrees) for violet / purple / magenta / blue-violet bubble fills.
+    /// Lower bound stays above typical UI blues (~210°); includes bluer bottom bubbles (~225–235°).
     /// </summary>
-    private const float PurpleHueMinDeg = 240f;
+    private const float PurpleHueMinDeg = 225f;
     private const float PurpleHueMaxDeg = 310f;
 
     /// <summary>Min HSV saturation so gray wallpaper / chrome is left alone.</summary>
@@ -48,9 +48,9 @@ public sealed class MessengerPanelNormalizer
     /// <summary>Min purple-pixel density inside a candidate bubble bounding box.</summary>
     private const float PurpleRegionDensityMin = 0.30f;
 
-    /// <summary>Ignore tiny purple blobs (wallpaper / AA); bubbles are much larger.</summary>
+    /// <summary>Ignore tiny purple blobs (wallpaper / AA); allow short one-line bubbles.</summary>
     private const int MinPurpleRegionWidth = 40;
-    private const int MinPurpleRegionHeight = 28;
+    private const int MinPurpleRegionHeight = 20;
 
     private const float DarkContrast = 1.2f;
     private const float LightContrast = 1.35f;
