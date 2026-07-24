@@ -16,7 +16,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
     public Task<string> CompleteChat(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        DeepSeekModel model = DeepSeekModel.Flash)
+        DeepSeekAiModel model = DeepSeekAiModel.Flash)
     {
         return CompleteChatCore(messages, ct, model, jsonMode: false);
     }
@@ -24,7 +24,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
     public async Task<T> AskJson<T>(
         string question,
         CancellationToken ct,
-        DeepSeekModel model = DeepSeekModel.Flash)
+        DeepSeekAiModel model = DeepSeekAiModel.Flash)
     {
         List<ChatMessage> messages =
         [
@@ -52,7 +52,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
     private async Task<string> CompleteChatCore(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        DeepSeekModel model,
+        DeepSeekAiModel model,
         bool jsonMode)
     {
         ArgumentNullException.ThrowIfNull(messages);
