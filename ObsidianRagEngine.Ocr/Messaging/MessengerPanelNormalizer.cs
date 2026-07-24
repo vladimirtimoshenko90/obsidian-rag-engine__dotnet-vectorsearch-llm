@@ -5,9 +5,9 @@ using SixLabors.ImageSharp.Processing;
 namespace ObsidianRagEngine.Ocr.Messaging;
 
 /// <summary>
-/// Prepares a single messenger panel for Tesseract: dark text on a light background.
-/// Purple/pink bubbles are region-prepped (dark: whiten text + blacken fill then invert;
-/// light: blacken text + whiten fill). Remaining colored bubbles are lifted.
+/// Prepares a single messenger panel for Tesseract as a short pipeline:
+/// optional 2× upscale (small dark crops) → purple bubble prep → invert (dark) →
+/// lift remaining colored bubbles → grayscale/contrast.
 /// Does not crop header chrome.
 /// </summary>
 public sealed class MessengerPanelNormalizer
@@ -56,7 +56,17 @@ public sealed class MessengerPanelNormalizer
     private const float LightContrast = 1.35f;
 
     /// <summary>
+    /// Upscale only very small dark phone crops. Larger / light panels are already
+    /// sharp enough; 2× there tends to fatten strokes and nudge scores down.
+    /// </summary>
+    private const int UpscaleMinShortSidePx = 350;
+
+    /// <summary>Lanczos upscale factor for qualifying panels.</summary>
+    private const float UpscaleFactor = 2f;
+
+    /// <summary>
     /// Returns a normalized PNG of <paramref name="panelBytes"/> suitable for document OCR.
+    /// Pipeline: optional upscale → purple prep → invert (dark) → lift bubbles → grayscale/contrast.
     /// </summary>
     public byte[] Normalize(byte[] panelBytes)
     {
@@ -65,8 +75,10 @@ public sealed class MessengerPanelNormalizer
             throw new ArgumentException("Panel bytes are empty.", nameof(panelBytes));
 
         using var image = Image.Load<Rgba32>(panelBytes);
-        var avg = AverageLuminance(image);
-        var isDark = avg < DarkLuminanceThreshold;
+        var isDark = AverageLuminance(image) < DarkLuminanceThreshold;
+
+        // Small dark crops only — denser glyphs before purple prep / invert.
+        UpscaleIfSmallDark(image, isDark);
 
         if (isDark)
             PrepDarkThemePurpleBubbles(image);
@@ -74,18 +86,41 @@ public sealed class MessengerPanelNormalizer
             PrepLightThemePurpleBubbles(image);
 
         if (isDark)
-            image.Mutate(ctx => ctx.Invert());
+            Invert(image);
 
-        // After invert (if any), lift remaining white/light text on saturated bubbles.
         LiftColoredBubbles(image);
+        ApplyGrayscaleContrast(image, isDark);
 
+        return EncodePng(image);
+    }
+
+    private static void Invert(Image<Rgba32> image) =>
+        image.Mutate(ctx => ctx.Invert());
+
+    private static void ApplyGrayscaleContrast(Image<Rgba32> image, bool isDark)
+    {
         image.Mutate(ctx =>
         {
             ctx.Grayscale();
             ctx.Contrast(isDark ? DarkContrast : LightContrast);
         });
+    }
 
-        return EncodePng(image);
+    /// <summary>
+    /// First pipeline step when useful: 2× Lanczos for small dark panels only.
+    /// </summary>
+    private static void UpscaleIfSmallDark(Image<Rgba32> image, bool isDark)
+    {
+        if (!isDark)
+            return;
+
+        var shortSide = Math.Min(image.Width, image.Height);
+        if (shortSide >= UpscaleMinShortSidePx)
+            return;
+
+        var width = Math.Max(1, (int)Math.Round(image.Width * UpscaleFactor));
+        var height = Math.Max(1, (int)Math.Round(image.Height * UpscaleFactor));
+        image.Mutate(ctx => ctx.Resize(width, height, KnownResamplers.Lanczos3));
     }
 
     /// <summary>
