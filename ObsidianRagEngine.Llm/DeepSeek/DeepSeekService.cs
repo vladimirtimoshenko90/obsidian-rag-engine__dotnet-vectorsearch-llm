@@ -26,20 +26,27 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
         CancellationToken ct,
         DeepSeekModel model = DeepSeekModel.Flash)
     {
-        var json = await CompleteChatCore(
-            [
-                new SystemChatMessage(AskJsonPromptBuilder.BuildSystemPrompt<T>()),
-                new UserChatMessage(question),
-            ],
-            ct,
-            model,
-            jsonMode: true);
+        List<ChatMessage> messages =
+        [
+            new SystemChatMessage(AskJsonPromptBuilder.BuildSystemPrompt<T>()),
+            new UserChatMessage(question),
+        ];
 
-        if (string.IsNullOrWhiteSpace(json))
-            throw new DeepSeekException("DeepSeek returned empty JSON content.");
+        var json = await CompleteChatCore(messages, ct, model, jsonMode: true);
 
-        return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)
-            ?? throw new DeepSeekException($"Failed to deserialize JSON to {typeof(T).Name}.");
+        try
+        {
+            return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
+        }
+        catch
+        {
+            // Docs: empty/bad JSON can happen — nudge the model and retry once.
+            messages.Add(new SystemChatMessage(
+                "Think carefully and thoughtfully. Return a valid non-empty JSON object that matches the example format."));
+
+            json = await CompleteChatCore(messages, ct, model, jsonMode: true);
+            return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
+        }
     }
 
     private async Task<string> CompleteChatCore(
