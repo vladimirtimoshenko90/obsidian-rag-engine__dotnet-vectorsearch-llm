@@ -1,6 +1,8 @@
 using System.ClientModel;
+using System.Text.Json;
 using OpenAI;
 using OpenAI.Chat;
+using ObsidianRagEngine.Llm.DeepSeek.Utility;
 
 namespace ObsidianRagEngine.Llm.DeepSeek;
 
@@ -11,22 +13,6 @@ namespace ObsidianRagEngine.Llm.DeepSeek;
 /// </summary>
 public sealed class DeepSeekService(OpenAIClient openAIClient)
 {
-    // System prompt for JSON mode — includes "json" + example shape (DeepSeek API requirement).
-    private const string JsonModeSystemPrompt = """
-        User asks a question. 
-        Find the correct answer. 
-        Reply only in the JSON format specified below.
-
-        EXAMPLE INPUT:
-        Which is the highest mountain in the world?
-
-        EXAMPLE JSON OUTPUT:
-        {
-            "question": "Which is the highest mountain in the world?",
-            "answer": "Mount Everest"
-        }
-        """;
-
     public Task<string> CompleteChat(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
@@ -35,22 +21,25 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
         return CompleteChatCore(messages, ct, model, jsonMode: false);
     }
 
-    /// <summary>
-    /// JSON mode with a fixed system prompt (example schema) and a user question message.
-    /// </summary>
-    public Task<string> AskJson(
+    public async Task<T> AskJson<T>(
         string question,
         CancellationToken ct,
         DeepSeekModel model = DeepSeekModel.Flash)
     {
-        return CompleteChatCore(
+        var json = await CompleteChatCore(
             [
-                new SystemChatMessage(JsonModeSystemPrompt),
+                new SystemChatMessage(AskJsonPromptBuilder.BuildSystemPrompt<T>()),
                 new UserChatMessage(question),
             ],
             ct,
             model,
             jsonMode: true);
+
+        if (string.IsNullOrWhiteSpace(json))
+            throw new DeepSeekException("DeepSeek returned empty JSON content.");
+
+        return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)
+            ?? throw new DeepSeekException($"Failed to deserialize JSON to {typeof(T).Name}.");
     }
 
     private async Task<string> CompleteChatCore(
@@ -64,7 +53,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient)
             throw new ArgumentException("At least one message is required.", nameof(messages));
 
         var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
-        
+
         var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
         if (jsonMode) chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
 
