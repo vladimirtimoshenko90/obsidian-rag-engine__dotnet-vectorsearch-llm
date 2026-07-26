@@ -21,15 +21,17 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
     public Task<string> CompleteChat(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        DeepSeekAiModel model = DeepSeekAiModel.Flash)
+        DeepSeekAiModel model = DeepSeekAiModel.Flash,
+        bool thinkingMode = false)
     {
-        return CompleteChatCore(messages, ct, model, jsonMode: false);
+        return CompleteChatCore(messages, ct, model, jsonMode: false, thinkingMode);
     }
 
     public async Task<T> AskJson<T>(
         string question,
         CancellationToken ct,
-        DeepSeekAiModel model = DeepSeekAiModel.Flash)
+        DeepSeekAiModel model = DeepSeekAiModel.Flash,
+        bool thinkingMode = false)
     {
         List<ChatMessage> messages =
         [
@@ -37,7 +39,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
             new UserChatMessage(question),
         ];
 
-        var json = await CompleteChatCore(messages, ct, model, jsonMode: true);
+        var json = await CompleteChatCore(messages, ct, model, jsonMode: true, thinkingMode);
 
         try
         {
@@ -49,7 +51,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
             messages.Add(new SystemChatMessage(
                 "Think carefully and thoughtfully. Return a valid non-empty JSON object that matches the example format."));
 
-            json = await CompleteChatCore(messages, ct, model, jsonMode: true);
+            json = await CompleteChatCore(messages, ct, model, jsonMode: true, thinkingMode);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
     }
@@ -58,7 +60,8 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
         DeepSeekAiModel model,
-        bool jsonMode)
+        bool jsonMode,
+        bool thinkingMode)
     {
         ArgumentNullException.ThrowIfNull(messages);
         if (messages.Count == 0)
@@ -67,7 +70,22 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
 
         var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
+
         if (jsonMode) chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
+
+        // DeepSeek thinking is not first-class on the OpenAI SDK; set via JsonPatch.
+        // API defaults thinking to enabled — always send an explicit toggle.
+#pragma warning disable SCME0001 // JsonPatch is evaluation-only in System.ClientModel
+        if (thinkingMode)
+        {
+            chatOptions.Patch.Set("$.thinking.type"u8, "enabled");
+            chatOptions.Patch.Set("$.reasoning_effort"u8, "max");
+        }
+        else
+        {
+            chatOptions.Patch.Set("$.thinking.type"u8, "disabled");
+        }
+#pragma warning restore SCME0001
 
         try
         {
