@@ -1,8 +1,8 @@
-using System.ClientModel;
-using System.Text.Json;
+using ObsidianRagEngine.Llm.DeepSeek.Utility;
 using OpenAI;
 using OpenAI.Chat;
-using ObsidianRagEngine.Llm.DeepSeek.Utility;
+using System.ClientModel;
+using System.Text.Json;
 
 namespace ObsidianRagEngine.Llm.DeepSeek;
 
@@ -11,8 +11,13 @@ namespace ObsidianRagEngine.Llm.DeepSeek;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class DeepSeekService(OpenAIClient openAIClient)
+public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
 {
+    public Task<string> Generate(string prompt, CancellationToken ct)
+    {
+        return CompleteChat([new UserChatMessage(prompt)], ct);
+    }
+
     public Task<string> CompleteChat(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
