@@ -48,9 +48,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         catch
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
-            messages.Add(new SystemChatMessage(
-                "Think carefully and thoughtfully. Return a valid non-empty JSON object that matches the example format."));
-
+            messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
             json = await CompleteChatCore(messages, ct, model, jsonMode: true, thinkingMode);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
@@ -63,15 +61,12 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         bool jsonMode,
         bool thinkingMode)
     {
-        ArgumentNullException.ThrowIfNull(messages);
-        if (messages.Count == 0)
-            throw new ArgumentException("At least one message is required.", nameof(messages));
-
         var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
 
         var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
 
-        if (jsonMode) chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
+        if (jsonMode)
+            chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
 
         // DeepSeek thinking is not first-class on the OpenAI SDK; set via JsonPatch.
         // API defaults thinking to enabled — always send an explicit toggle.
@@ -89,13 +84,10 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
 
         try
         {
-            ClientResult<ChatCompletion> result = await chatClient.CompleteChatAsync(messages, chatOptions, ct);
-
-            ChatCompletion completion = result.Value;
-            if (completion.Content is not { Count: > 0 })
-                return string.Empty;
-
-            return completion.Content[0].Text ?? string.Empty;
+            var result = await chatClient.CompleteChatAsync(messages, chatOptions, ct);
+            return result.Value.Content is { Count: > 0 }
+                ? result.Value.Content[0].Text ?? string.Empty
+                : string.Empty;
         }
         catch (ClientResultException ex)
         {

@@ -26,6 +26,9 @@ internal static class AskJsonPromptBuilder
             """;
     }
 
+    public const string ClarificationPrompt =
+        "Think carefully and thoughtfully. Return a valid non-empty JSON object that matches the example format.";
+
     private static string BuildExampleJson(Type type)
     {
         return BuildNode(type).ToJsonString(JsonOptions);
