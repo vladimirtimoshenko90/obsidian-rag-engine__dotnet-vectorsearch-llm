@@ -15,7 +15,7 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
 {
     public Task<string> Generate(string prompt, CancellationToken ct)
     {
-        return CompleteChat([new UserChatMessage(prompt)], ct);
+        return CompleteChatCore([new UserChatMessage(prompt)], ct, KimiAiModel.K2_6, jsonMode: false);
     }
 
     public Task<string> CompleteChat(
@@ -50,6 +50,26 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
             json = await CompleteChatCore(messages, ct, model, jsonMode: true);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
+    }
+
+    public Task<string> ExtractTextFromImage(
+        ReadOnlyMemory<byte> imageBytes,
+        string mediaType,
+        CancellationToken ct,
+        KimiAiModel model = KimiAiModel.K2_6)
+    {
+        ChatMessage message = new UserChatMessage(
+            ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
+            ChatMessageContentPart.CreateTextPart(
+                """
+                Extract all readable text from the image in reading order (top to bottom, left to right).
+                Preserve line breaks that separate messages or paragraphs.
+                Copy text exactly: keep original language, spelling, punctuation, and casing.
+                Do not describe the image, translate, summarize, or invent missing words.
+                If there is no text, reply with an empty response.
+                """));
+
+        return CompleteChatCore([message], ct, model, jsonMode: false);
     }
 
     private async Task<string> CompleteChatCore(
