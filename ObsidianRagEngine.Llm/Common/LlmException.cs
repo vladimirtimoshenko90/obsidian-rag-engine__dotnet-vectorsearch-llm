@@ -1,26 +1,27 @@
 using System.ClientModel;
 
-namespace ObsidianRagEngine.Llm.Kimi;
+namespace ObsidianRagEngine.Llm.Common;
 
-public sealed class KimiException : Exception
+public sealed class LlmException : Exception
 {
     private const int MaxErrorBodyChars = 512;
 
     public int? Status { get; }
 
-    public KimiException(string message, int? status = null, Exception? innerException = null)
+    public LlmException(string message, int? status = null, Exception? innerException = null)
         : base(message, innerException)
     {
         Status = status;
     }
 
-    public static KimiException FromComplete(ClientResultException ex)
+    public static LlmException FromComplete(string provider, ClientResultException ex)
     {
+        ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(ex);
 
         var detail = Truncate(ex.GetRawResponse()?.Content?.ToString() ?? ex.Message);
-        return new KimiException(
-            $"Kimi chat completion failed (HTTP {ex.Status}): {detail}",
+        return new LlmException(
+            $"{provider} chat completion failed (HTTP {ex.Status}): {detail}",
             ex.Status,
             ex);
     }

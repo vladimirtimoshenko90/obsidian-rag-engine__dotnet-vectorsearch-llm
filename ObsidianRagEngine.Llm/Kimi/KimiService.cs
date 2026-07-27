@@ -1,4 +1,4 @@
-using ObsidianRagEngine.Llm.Kimi.Utility;
+using ObsidianRagEngine.Llm.Common;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -80,7 +80,7 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
         }
         catch (ClientResultException ex)
         {
-            throw KimiException.FromComplete(ex);
+            throw LlmException.FromComplete("Kimi", ex);
         }
     }
 }

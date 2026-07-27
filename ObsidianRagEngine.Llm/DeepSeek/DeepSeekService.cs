@@ -1,4 +1,4 @@
-using ObsidianRagEngine.Llm.DeepSeek.Utility;
+using ObsidianRagEngine.Llm.Common;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -91,7 +91,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         }
         catch (ClientResultException ex)
         {
-            throw DeepSeekException.FromComplete(ex);
+            throw LlmException.FromComplete("DeepSeek", ex);
         }
     }
 }

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace ObsidianRagEngine.Llm.DeepSeek.Utility;
+namespace ObsidianRagEngine.Llm.Common;
 
 internal static class AskJsonPromptBuilder
 {
