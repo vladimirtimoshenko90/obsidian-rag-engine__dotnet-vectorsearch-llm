@@ -54,7 +54,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
     {
         var chatClient = openAIClient.GetChatClient(ModelName);
 
-        var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
+        var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = LlmDefaults.MaxOutputTokenCount };
 
         if (jsonMode)
             chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();

@@ -63,7 +63,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel mod
     {
         var chatClient = openAIClient.GetChatClient(ModelName);
 
-        var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
+        var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = LlmDefaults.MaxOutputTokenCount };
 
         if (jsonMode)
             chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
