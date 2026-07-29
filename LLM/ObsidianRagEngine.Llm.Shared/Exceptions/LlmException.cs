@@ -1,6 +1,6 @@
 using System.ClientModel;
 
-namespace ObsidianRagEngine.Llm.Common;
+namespace ObsidianRagEngine.Llm.Exceptions;
 
 public sealed class LlmException : Exception
 {

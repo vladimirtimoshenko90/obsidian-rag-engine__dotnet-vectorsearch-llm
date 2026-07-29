@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace ObsidianRagEngine.Llm.Common;
+namespace ObsidianRagEngine.Llm.Prompts;
 
 internal static class AskJsonPromptBuilder
 {

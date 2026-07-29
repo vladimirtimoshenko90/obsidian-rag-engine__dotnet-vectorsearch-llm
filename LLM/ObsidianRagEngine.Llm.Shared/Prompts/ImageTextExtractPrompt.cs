@@ -1,6 +1,6 @@
 using ObsidianRagEngine.Contracts;
 
-namespace ObsidianRagEngine.Llm.Common;
+namespace ObsidianRagEngine.Llm.Prompts;
 
 internal static class ImageTextExtractPrompt
 {

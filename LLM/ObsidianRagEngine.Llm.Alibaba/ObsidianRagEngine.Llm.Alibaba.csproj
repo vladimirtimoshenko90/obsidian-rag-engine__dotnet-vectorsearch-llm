@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ObsidianRagEngine.Contracts\ObsidianRagEngine.Contracts.csproj" />
+    <ProjectReference Include="..\ObsidianRagEngine.Llm.Shared\ObsidianRagEngine.Llm.Shared.csproj" />
   </ItemGroup>
 
 </Project>

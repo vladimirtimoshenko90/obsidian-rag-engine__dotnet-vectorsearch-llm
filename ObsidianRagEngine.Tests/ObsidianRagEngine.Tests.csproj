@@ -31,7 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ObsidianRagEngine.Console\ObsidianRagEngine.Console.csproj" />
     <ProjectReference Include="..\ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj" />
-    <ProjectReference Include="..\ObsidianRagEngine.Llm\ObsidianRagEngine.Llm.csproj" />
+    <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeekOllama\ObsidianRagEngine.Llm.DeepSeekOllama.csproj" />
   </ItemGroup>
 
   <ItemGroup>

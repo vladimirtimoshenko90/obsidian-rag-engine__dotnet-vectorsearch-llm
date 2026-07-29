@@ -1,28 +1,29 @@
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Llm.Common;
+using ObsidianRagEngine.Llm.Exceptions;
+using ObsidianRagEngine.Llm.Prompts;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
 using System.Text.Json;
 
-namespace ObsidianRagEngine.Llm.Alibaba;
+namespace ObsidianRagEngine.Llm.Kimi;
 
 /// <summary>
-/// Thin Alibaba Model Studio (DashScope) chat client (OpenAI-compatible). Prefer a long
+/// Thin Kimi (Moonshot) API chat client (OpenAI-compatible). Prefer a long
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
-/// <see cref="OpenAIClient"/> for slower calls. Endpoint and API key must be from the same region.
+/// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
+public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
 {
     public Task<string> Generate(string prompt, CancellationToken ct)
     {
-        return CompleteChatCore([new UserChatMessage(prompt)], ct, AlibabaAiModel.Qwen37Plus, jsonMode: false);
+        return CompleteChatCore([new UserChatMessage(prompt)], ct, KimiAiModel.K2_6, jsonMode: false);
     }
 
     public Task<string> CompleteChat(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        AlibabaAiModel model = AlibabaAiModel.Qwen37Plus)
+        KimiAiModel model = KimiAiModel.K2_6)
     {
         return CompleteChatCore(messages, ct, model, jsonMode: false);
     }
@@ -30,7 +31,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
     public async Task<T> AskJson<T>(
         string question,
         CancellationToken ct,
-        AlibabaAiModel model = AlibabaAiModel.Qwen37Plus)
+        KimiAiModel model = KimiAiModel.K2_6)
     {
         List<ChatMessage> messages =
         [
@@ -58,7 +59,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
         string mediaType,
         CancellationToken ct,
         IReadOnlyList<OcrLanguage>? languages = null,
-        AlibabaAiModel model = AlibabaAiModel.Qwen37Plus)
+        KimiAiModel model = KimiAiModel.K2_6)
     {
         ChatMessage message = new UserChatMessage(
             ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
@@ -70,7 +71,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
     private async Task<string> CompleteChatCore(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        AlibabaAiModel model,
+        KimiAiModel model,
         bool jsonMode)
     {
         var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
@@ -79,6 +80,12 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
 
         if (jsonMode)
             chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
+
+        // K2_6 defaults to thinking on — disable explicitly. K2_7 / K3 always think (API defaults).
+#pragma warning disable SCME0001 // JsonPatch is evaluation-only in System.ClientModel
+        if (model == KimiAiModel.K2_6)
+            chatOptions.Patch.Set("$.thinking.type"u8, "disabled");
+#pragma warning restore SCME0001
 
         try
         {
@@ -89,7 +96,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
         }
         catch (ClientResultException ex)
         {
-            throw LlmException.FromComplete("Alibaba", ex);
+            throw LlmException.FromComplete("Kimi", ex);
         }
     }
 }
