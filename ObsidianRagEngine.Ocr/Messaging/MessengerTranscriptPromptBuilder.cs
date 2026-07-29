@@ -1,24 +1,12 @@
 using System.Text;
-using ObsidianRagEngine.Llm;
 
 namespace ObsidianRagEngine.Ocr.Messaging;
 
 /// <summary>
-/// Merges ordered messenger-panel OCR strings into one cleaned chat transcript.
+/// Builds the LLM prompt that merges ordered messenger-panel OCR strings into one cleaned chat transcript.
 /// </summary>
-public interface IMessengerTranscriptMerger
+public static class MessengerTranscriptPromptBuilder
 {
-    Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct);
-}
-
-/// <summary>
-/// Uses an <see cref="ILlmService"/> to merge and clean messenger-panel OCR text.
-/// LLM backend is injectable (Ollama, cloud API, etc.).
-/// </summary>
-public sealed class MessengerTranscriptMerger(ILlmService llm) : IMessengerTranscriptMerger
-{
-    private readonly ILlmService _llm = llm ?? throw new ArgumentNullException(nameof(llm));
-
     private const string MergeInstructions =
         """
         Ты получаешь несколько OCR-фрагментов одной переписки в мессенджере. Фрагменты уже отсортированы по времени.
@@ -81,19 +69,7 @@ public sealed class MessengerTranscriptMerger(ILlmService llm) : IMessengerTrans
         Выдай только итоговый диалог. Никаких пояснений, комментариев, технических меток, списка изменений. Только текст переписки.
         """;
 
-    public async Task<string> MergeAsync(IReadOnlyList<string> panelTexts, CancellationToken ct)
-    {
-        ArgumentNullException.ThrowIfNull(panelTexts);
-
-        if (panelTexts.Count == 0)
-            return string.Empty;
-
-        var prompt = BuildPrompt(panelTexts);
-        var result = await _llm.Generate(prompt, ct);
-        return result.Trim();
-    }
-
-    private static string BuildPrompt(IReadOnlyList<string> panelTexts)
+    public static string BuildPrompt(IReadOnlyList<string> panelTexts)
     {
         var sb = new StringBuilder();
         sb.AppendLine(MergeInstructions.Trim());

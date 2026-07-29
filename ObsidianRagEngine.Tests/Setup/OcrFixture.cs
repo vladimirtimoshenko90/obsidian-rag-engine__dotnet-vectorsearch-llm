@@ -38,9 +38,9 @@ public sealed class OcrFixture : IDisposable
 
         MessengerScreenshot = new MessengerScreenshotOcrService(
             Tesseract,
+            llm,
             new MessengerPanelSplitter(),
-            new MessengerPanelNormalizer(),
-            new MessengerTranscriptMerger(llm));
+            new MessengerPanelNormalizer());
     }
 
     public void Dispose()
