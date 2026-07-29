@@ -1,6 +1,6 @@
+using ObsidianRagEngine.Contracts;
 using System.Net.Http.Json;
 using System.Text.Json;
-using ObsidianRagEngine.Contracts;
 
 namespace ObsidianRagEngine.Ocr.Tesseract;
 
@@ -12,11 +12,11 @@ public class TesseractOcrService(HttpClient httpClient) : IOcrService
 {
     public string ModelName => "tesseract";
 
-    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages, CancellationToken ct)
+    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
     {
         var optionsJson = JsonSerializer.Serialize(new
         {
-            languages,
+            languages = TesseractLanguageMapper.ToTesseractCodes(languages),
             configParams = new { }
         });
 

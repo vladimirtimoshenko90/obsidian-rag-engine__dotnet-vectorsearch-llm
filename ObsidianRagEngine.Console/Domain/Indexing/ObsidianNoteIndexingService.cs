@@ -1,7 +1,6 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Console.Domain.Reading;
 using System.Text.RegularExpressions;
 
@@ -39,7 +38,7 @@ public class ObsidianNoteIndexingService(
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
                 var extractedText = await ocrService.ExtractText(
                     imageBytes,
-                    [TesseractLanguages.Russian, TesseractLanguages.English],
+                    [OcrLanguage.Russian, OcrLanguage.English],
                     ct);
 
                 ocrResult = await noteImageRepo.Create(new ObsidianImage

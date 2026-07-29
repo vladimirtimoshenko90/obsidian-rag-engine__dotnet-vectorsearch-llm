@@ -16,12 +16,12 @@ public sealed class MessengerScreenshotOcrService(
     // Distinct from raw OCR cache keys: "{base}-messenger".
     public string ModelName => $"{ocr.ModelName}-messenger";
 
-    public Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<string> languages, CancellationToken ct) =>
+    public Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct) =>
         ExtractText(imageBytes, languages, ct, callbacks: null);
 
     public async Task<string> ExtractText(
         byte[] imageBytes,
-        IReadOnlyList<string> languages,
+        IReadOnlyList<OcrLanguage> languages,
         CancellationToken ct,
         MessengerOcrCallbacks? callbacks)
     {

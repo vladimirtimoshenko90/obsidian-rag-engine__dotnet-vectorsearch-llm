@@ -1,6 +1,6 @@
 using FluentAssertions;
+using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Ocr.Messaging;
-using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 
@@ -27,7 +27,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
         // Act
         var ocredText = await sut.ExtractText(
             imageBytes,
-            [TesseractLanguages.Russian, TesseractLanguages.English],
+            [OcrLanguage.Russian, OcrLanguage.English],
             CancellationToken.None,
             new MessengerOcrCallbacks
             {

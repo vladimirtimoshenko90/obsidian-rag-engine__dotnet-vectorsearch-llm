@@ -1,5 +1,5 @@
 using FluentAssertions;
-using ObsidianRagEngine.Ocr.Tesseract;
+using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 
@@ -26,7 +26,7 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
         // Act
         var ocredText = await sut.ExtractText(
             imageBytes,
-            [TesseractLanguages.Russian, TesseractLanguages.English],
+            [OcrLanguage.Russian, OcrLanguage.English],
             CancellationToken.None);
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
