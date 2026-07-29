@@ -14,11 +14,11 @@ namespace ObsidianRagEngine.Llm.Alibaba;
 /// <see cref="OpenAIClient"/> for slower calls. Endpoint and API key must be from the same region.
 /// </summary>
 public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel model) 
-    : ILlmService, IOcrService
+    : ILlmProvider, IOcrProvider
 {
     public string ModelName => model.ToApiModelId();
 
-    public Task<string> Generate(string prompt, CancellationToken ct) =>
+    public Task<string> Complete(string prompt, CancellationToken ct) =>
         CompleteChatCore([new UserChatMessage(prompt)], ct, jsonMode: false);
 
     public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct) =>

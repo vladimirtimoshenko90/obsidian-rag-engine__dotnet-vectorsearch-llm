@@ -4,11 +4,12 @@ using ObsidianRagEngine.Contracts;
 
 namespace ObsidianRagEngine.Llm.DeepSeekOllama;
 
-public class DeepSeekOllamaService(HttpClient httpClient, string modelName) : ILlmService
+public class DeepSeekOllamaService(HttpClient httpClient, string modelName) 
+    : ILlmProvider
 {
     public string ModelName => modelName;
 
-    public async Task<string> Generate(string prompt, CancellationToken ct)
+    public async Task<string> Complete(string prompt, CancellationToken ct)
     {
         var response = await httpClient.PostAsJsonAsync(
             "/api/generate",

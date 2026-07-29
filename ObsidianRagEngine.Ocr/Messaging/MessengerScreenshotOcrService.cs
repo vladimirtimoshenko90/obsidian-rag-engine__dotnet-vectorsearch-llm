@@ -8,10 +8,10 @@ namespace ObsidianRagEngine.Ocr.Messaging;
 /// Depends on OCR and LLM abstractions only — backends are injected at composition root.
 /// </summary>
 public sealed class MessengerScreenshotOcrService(
-    IOcrService ocr,
-    ILlmService llm,
+    IOcrProvider ocr,
+    ILlmProvider llm,
     MessengerPanelSplitter splitter,
-    MessengerPanelNormalizer normalizer) : IOcrService
+    MessengerPanelNormalizer normalizer) : IOcrProvider
 {
     // Distinct from raw OCR cache keys: "{base}-messenger".
     public string ModelName => $"{ocr.ModelName}-messenger";
@@ -40,7 +40,7 @@ public sealed class MessengerScreenshotOcrService(
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
         var promptMerge = MessengerTranscriptPromptBuilder.BuildPrompt(texts);
-        var transcript = await llm.Generate(promptMerge, ct);
+        var transcript = await llm.Complete(promptMerge, ct);
 
         return transcript.Trim();
     }

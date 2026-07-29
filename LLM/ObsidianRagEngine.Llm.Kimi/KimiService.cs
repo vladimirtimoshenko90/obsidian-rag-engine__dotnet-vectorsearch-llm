@@ -14,11 +14,11 @@ namespace ObsidianRagEngine.Llm.Kimi;
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
 public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) 
-    : ILlmService, IOcrService
+    : ILlmProvider, IOcrProvider
 {
     public string ModelName => model.ToApiModelId();
 
-    public Task<string> Generate(string prompt, CancellationToken ct) =>
+    public Task<string> Complete(string prompt, CancellationToken ct) =>
         CompleteChatCore([new UserChatMessage(prompt)], ct, jsonMode: false);
 
     public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct) =>

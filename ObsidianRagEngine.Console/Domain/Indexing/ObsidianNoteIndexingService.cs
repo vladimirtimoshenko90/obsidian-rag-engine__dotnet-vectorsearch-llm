@@ -14,7 +14,7 @@ public interface IObsidianNoteIndexingService
 public class ObsidianNoteIndexingService(
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
-    IOcrService ocrService) : IObsidianNoteIndexingService
+    IOcrProvider ocr) : IObsidianNoteIndexingService
 {
     public async Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
@@ -32,11 +32,11 @@ public class ObsidianNoteIndexingService(
 
         foreach (var imagePath in noteFile.ImagePaths)
         {
-            var ocrResult = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, ocrService.ModelName, ct);
+            var ocrResult = await noteImageRepo.GetByFilePathAndOcrModel(imagePath, ocr.ModelName, ct);
             if (ocrResult is null)
             {
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
-                var extractedText = await ocrService.ExtractText(
+                var extractedText = await ocr.ExtractText(
                     imageBytes,
                     [OcrLanguage.Russian, OcrLanguage.English],
                     ct);
@@ -44,7 +44,7 @@ public class ObsidianNoteIndexingService(
                 ocrResult = await noteImageRepo.Create(new ObsidianImage
                 {
                     FilePath = imagePath,
-                    OcrModel = ocrService.ModelName,
+                    OcrModel = ocr.ModelName,
                     ExtractedText = extractedText
                 }, ct);
             }

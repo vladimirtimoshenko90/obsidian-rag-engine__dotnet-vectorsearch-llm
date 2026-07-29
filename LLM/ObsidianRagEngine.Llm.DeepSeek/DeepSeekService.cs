@@ -13,11 +13,12 @@ namespace ObsidianRagEngine.Llm.DeepSeek;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel model) : ILlmService
+public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel model) 
+    : ILlmProvider
 {
     public string ModelName => model.ToApiModelId();
 
-    public Task<string> Generate(string prompt, CancellationToken ct) =>
+    public Task<string> Complete(string prompt, CancellationToken ct) =>
         CompleteChat([new UserChatMessage(prompt)], ct);
 
     public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
