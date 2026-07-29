@@ -13,25 +13,17 @@ namespace ObsidianRagEngine.Llm.Kimi;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
+public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) : ILlmService
 {
-    public Task<string> Generate(string prompt, CancellationToken ct)
-    {
-        return CompleteChatCore([new UserChatMessage(prompt)], ct, KimiAiModel.K2_6, jsonMode: false);
-    }
+    public string ModelName => model.ToApiModelId();
 
-    public Task<string> CompleteChat(
-        IReadOnlyList<ChatMessage> messages,
-        CancellationToken ct,
-        KimiAiModel model = KimiAiModel.K2_6)
-    {
-        return CompleteChatCore(messages, ct, model, jsonMode: false);
-    }
+    public Task<string> Generate(string prompt, CancellationToken ct) =>
+        CompleteChatCore([new UserChatMessage(prompt)], ct, jsonMode: false);
 
-    public async Task<T> AskJson<T>(
-        string question,
-        CancellationToken ct,
-        KimiAiModel model = KimiAiModel.K2_6)
+    public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct) =>
+        CompleteChatCore(messages, ct, jsonMode: false);
+
+    public async Task<T> AskJson<T>(string question, CancellationToken ct)
     {
         List<ChatMessage> messages =
         [
@@ -39,7 +31,7 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
             new UserChatMessage(question),
         ];
 
-        var json = await CompleteChatCore(messages, ct, model, jsonMode: true);
+        var json = await CompleteChatCore(messages, ct, jsonMode: true);
 
         try
         {
@@ -49,7 +41,7 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
             messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
-            json = await CompleteChatCore(messages, ct, model, jsonMode: true);
+            json = await CompleteChatCore(messages, ct, jsonMode: true);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
     }
@@ -58,23 +50,18 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
         ReadOnlyMemory<byte> imageBytes,
         string mediaType,
         CancellationToken ct,
-        IReadOnlyList<OcrLanguage>? languages = null,
-        KimiAiModel model = KimiAiModel.K2_6)
+        IReadOnlyList<OcrLanguage>? languages = null)
     {
         ChatMessage message = new UserChatMessage(
             ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
             ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
 
-        return CompleteChatCore([message], ct, model, jsonMode: false);
+        return CompleteChatCore([message], ct, jsonMode: false);
     }
 
-    private async Task<string> CompleteChatCore(
-        IReadOnlyList<ChatMessage> messages,
-        CancellationToken ct,
-        KimiAiModel model,
-        bool jsonMode)
+    private async Task<string> CompleteChatCore(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool jsonMode)
     {
-        var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
+        var chatClient = openAIClient.GetChatClient(ModelName);
 
         var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
 

@@ -13,27 +13,17 @@ namespace ObsidianRagEngine.Llm.DeepSeek;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
+public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel model) : ILlmService
 {
-    public Task<string> Generate(string prompt, CancellationToken ct)
-    {
-        return CompleteChat([new UserChatMessage(prompt)], ct);
-    }
+    public string ModelName => model.ToApiModelId();
 
-    public Task<string> CompleteChat(
-        IReadOnlyList<ChatMessage> messages,
-        CancellationToken ct,
-        DeepSeekAiModel model = DeepSeekAiModel.Flash,
-        bool thinkingMode = false)
-    {
-        return CompleteChatCore(messages, ct, model, jsonMode: false, thinkingMode);
-    }
+    public Task<string> Generate(string prompt, CancellationToken ct) =>
+        CompleteChat([new UserChatMessage(prompt)], ct);
 
-    public async Task<T> AskJson<T>(
-        string question,
-        CancellationToken ct,
-        DeepSeekAiModel model = DeepSeekAiModel.Flash,
-        bool thinkingMode = false)
+    public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
+        CompleteChatCore(messages, ct, jsonMode: false, thinkingMode);
+
+    public async Task<T> AskJson<T>(string question, CancellationToken ct, bool thinkingMode = false)
     {
         List<ChatMessage> messages =
         [
@@ -41,7 +31,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
             new UserChatMessage(question),
         ];
 
-        var json = await CompleteChatCore(messages, ct, model, jsonMode: true, thinkingMode);
+        var json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
 
         try
         {
@@ -51,7 +41,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
             messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
-            json = await CompleteChatCore(messages, ct, model, jsonMode: true, thinkingMode);
+            json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
     }
@@ -59,11 +49,10 @@ public sealed class DeepSeekService(OpenAIClient openAIClient) : ILlmService
     private async Task<string> CompleteChatCore(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
-        DeepSeekAiModel model,
         bool jsonMode,
         bool thinkingMode)
     {
-        var chatClient = openAIClient.GetChatClient(model.ToApiModelId());
+        var chatClient = openAIClient.GetChatClient(ModelName);
 
         var chatOptions = new ChatCompletionOptions { MaxOutputTokenCount = 20_000 };
 
