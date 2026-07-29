@@ -57,11 +57,12 @@ public sealed class AlibabaService(OpenAIClient openAIClient) : ILlmService
         ReadOnlyMemory<byte> imageBytes,
         string mediaType,
         CancellationToken ct,
+        IReadOnlyList<OcrLanguage>? languages = null,
         AlibabaAiModel model = AlibabaAiModel.Qwen37Plus)
     {
         ChatMessage message = new UserChatMessage(
             ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
-            ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Text));
+            ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
 
         return CompleteChatCore([message], ct, model, jsonMode: false);
     }

@@ -57,11 +57,12 @@ public sealed class KimiService(OpenAIClient openAIClient) : ILlmService
         ReadOnlyMemory<byte> imageBytes,
         string mediaType,
         CancellationToken ct,
+        IReadOnlyList<OcrLanguage>? languages = null,
         KimiAiModel model = KimiAiModel.K2_6)
     {
         ChatMessage message = new UserChatMessage(
             ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
-            ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Text));
+            ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
 
         return CompleteChatCore([message], ct, model, jsonMode: false);
     }

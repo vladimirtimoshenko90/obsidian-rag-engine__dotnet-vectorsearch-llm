@@ -1,8 +1,10 @@
+using ObsidianRagEngine.Contracts;
+
 namespace ObsidianRagEngine.Llm.Common;
 
 internal static class ImageTextExtractPrompt
 {
-    public const string Text =
+    private const string BaseText =
         """
         Extract all readable text from the image in reading order (top to bottom, left to right).
         Preserve line breaks that separate messages or paragraphs.
@@ -10,4 +12,18 @@ internal static class ImageTextExtractPrompt
         Do not describe the image, translate, summarize, or invent missing words.
         If there is no text, reply with an empty response.
         """;
+
+    public static string Build(IReadOnlyList<OcrLanguage>? languages)
+    {
+        var prompt = BaseText;
+
+        if (languages is { Count: > 0 })
+        {
+            prompt +=
+                $"\nThe text is expected to be primarily in: {string.Join(", ", languages)}."
+                + " Prefer those scripts/languages when disambiguating characters.";
+        }
+
+        return prompt;
+    }
 }
