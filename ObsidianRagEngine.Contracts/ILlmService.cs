@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Llm;
+namespace ObsidianRagEngine.Contracts;
 
 public interface ILlmService
 {

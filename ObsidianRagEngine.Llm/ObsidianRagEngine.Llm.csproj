@@ -10,4 +10,8 @@
     <PackageReference Include="OpenAI" Version="2.12.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ObsidianRagEngine.Contracts\ObsidianRagEngine.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

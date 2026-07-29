@@ -1,4 +1,4 @@
-using ObsidianRagEngine.Llm;
+using ObsidianRagEngine.Contracts;
 
 namespace ObsidianRagEngine.Ocr.Messaging;
 

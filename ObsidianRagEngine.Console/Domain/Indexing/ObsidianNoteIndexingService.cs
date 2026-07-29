@@ -1,6 +1,6 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Ocr;
+using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Ocr.Tesseract;
 using ObsidianRagEngine.Console.Domain.Reading;
 using System.Text.RegularExpressions;

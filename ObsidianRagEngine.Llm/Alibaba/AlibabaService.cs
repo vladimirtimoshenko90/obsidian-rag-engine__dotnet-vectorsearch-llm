@@ -1,3 +1,4 @@
+using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.Common;
 using OpenAI;
 using OpenAI.Chat;

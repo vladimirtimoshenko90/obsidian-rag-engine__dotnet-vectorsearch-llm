@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr;
+namespace ObsidianRagEngine.Contracts;
 
 public interface IOcrService
 {

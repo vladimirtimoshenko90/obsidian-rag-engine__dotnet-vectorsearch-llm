@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using ObsidianRagEngine.Contracts;
 
 namespace ObsidianRagEngine.Ocr.Tesseract;
 
