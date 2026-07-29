@@ -13,7 +13,8 @@ namespace ObsidianRagEngine.Llm.Kimi;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
-public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) : ILlmService
+public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) 
+    : ILlmService, IOcrService
 {
     public string ModelName => model.ToApiModelId();
 
@@ -46,14 +47,10 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) : 
         }
     }
 
-    public Task<string> ExtractTextFromImage(
-        ReadOnlyMemory<byte> imageBytes,
-        string mediaType,
-        CancellationToken ct,
-        IReadOnlyList<OcrLanguage>? languages = null)
+    public Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
     {
         ChatMessage message = new UserChatMessage(
-            ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), mediaType),
+            ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), LlmDefaults.OcrMediaType),
             ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
 
         return CompleteChatCore([message], ct, jsonMode: false);
