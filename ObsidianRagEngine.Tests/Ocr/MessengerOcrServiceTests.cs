@@ -10,14 +10,21 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
 {
     private const double MinimumSimilarity = 0.6;
 
+    public static IEnumerable<object[]> TheoryCases()
+    {
+        foreach (var testCase in OcrTestStore.LoadCases())
+            foreach (var llm in LlmProviders.All)
+                yield return [testCase, llm];
+    }
+
     [Theory]
-    [MemberData(nameof(OcrTestStore.TheoryCases), MemberType = typeof(OcrTestStore))]
-    public async Task ExtractText_FromSampleImage_MatchesExpectedText(OcrTestCase testCase)
+    [MemberData(nameof(TheoryCases))]
+    public async Task ExtractText_FromSampleImage_MatchesExpectedText(
+        OcrTestCase testCase, ILlmProvider llm)
     {
         // Arrange
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
-
-        var sut = fixture.MessengerScreenshot;
+        var sut = new MessengerOcrService(fixture.Tesseract, llm);
         OcrTestStore.ResetResultFolder(testCase, sut.ModelName);
 
         // Act
