@@ -23,12 +23,12 @@ public static class OcrTestStore
 
     public static IReadOnlyList<OcrTestCase> LoadCases()
     {
-        // Cases are copied to the test output directory.
-        var root = Path.Combine(AppContext.BaseDirectory, "___testdata", "ocr");
-        if (!Directory.Exists(root))
+        // Project-source ___testdata (gitignored, not copied to bin, available in local env)
+        var rootDir = GetSourceTestdataRoot();
+        if (!Directory.Exists(rootDir))
             return [];
 
-        var testCases = Directory.EnumerateDirectories(root)
+        var testCases = EnumerateCaseDirectories(rootDir)
             .Select(LoadCase)
             .ToList();
 
