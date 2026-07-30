@@ -1,14 +1,13 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
-namespace ObsidianRagEngine.Ocr.Messaging;
+namespace ObsidianRagEngine.Ocr.Messaging.Splitting;
 
 /// <summary>
-/// Splits a side-by-side messenger screenshot composite into individual panel images
-/// by detecting low-contrast vertical seams (skipping header/footer chrome).
+/// Finds vertical cut positions in a side-by-side messenger composite
+/// by detecting low-contrast gutters (skipping header/footer chrome).
 /// </summary>
-public sealed class MessengerPanelSplitter
+internal static class PanelSeamDetector
 {
     private const float TopSkipFraction = 0.20f;
     private const float BottomSkipFraction = 0.05f;
@@ -18,48 +17,9 @@ public sealed class MessengerPanelSplitter
     private const float MinPanelWidthFraction = 0.12f;
 
     /// <summary>
-    /// Crops <paramref name="imageBytes"/> into left-to-right panel PNGs.
-    /// If no gutters are found, returns the original image as a single panel.
+    /// Returns cut X positions including 0 and Width.
     /// </summary>
-    public IReadOnlyList<byte[]> Split(byte[] imageBytes)
-    {
-        ArgumentNullException.ThrowIfNull(imageBytes);
-        if (imageBytes.Length == 0)
-            throw new ArgumentException("Image bytes are empty.", nameof(imageBytes));
-
-        using var image = Image.Load<Rgba32>(imageBytes);
-        var cuts = FindCutPositions(image);
-
-        // No gutters → keep the original bytes (avoid re-encode).
-        if (cuts.Count <= 2)
-            return [imageBytes];
-
-        var panels = new List<byte[]>(cuts.Count - 1);
-        for (var i = 0; i < cuts.Count - 1; i++)
-        {
-            var x = cuts[i];
-            var w = cuts[i + 1] - cuts[i];
-            if (w <= 0)
-                continue;
-
-            using var panel = image.Clone(ctx => ctx.Crop(new Rectangle(x, 0, w, image.Height)));
-            panels.Add(EncodePng(panel));
-        }
-
-        return panels.Count > 0 ? panels : [EncodePng(image)];
-    }
-
-    /// <summary>
-    /// Returns cut X positions including 0 and Width (for diagnostics / tests).
-    /// </summary>
-    public IReadOnlyList<int> FindCutPositions(byte[] imageBytes)
-    {
-        ArgumentNullException.ThrowIfNull(imageBytes);
-        using var image = Image.Load<Rgba32>(imageBytes);
-        return FindCutPositions(image);
-    }
-
-    private static List<int> FindCutPositions(Image<Rgba32> image)
+    public static List<int> FindCutPositions(Image<Rgba32> image)
     {
         var width = image.Width;
         var height = image.Height;
@@ -224,11 +184,4 @@ public sealed class MessengerPanelSplitter
 
     private static float ToGray(Rgba32 p) =>
         (0.299f * p.R + 0.587f * p.G + 0.114f * p.B) / 255f;
-
-    private static byte[] EncodePng(Image<Rgba32> image)
-    {
-        using var ms = new MemoryStream();
-        image.SaveAsPng(ms);
-        return ms.ToArray();
-    }
 }
