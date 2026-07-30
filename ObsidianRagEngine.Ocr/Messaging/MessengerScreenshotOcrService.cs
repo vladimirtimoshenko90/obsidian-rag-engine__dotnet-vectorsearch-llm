@@ -10,12 +10,11 @@ namespace ObsidianRagEngine.Ocr.Messaging;
 /// Pass optional <see cref="MessengerOcrCallbacks"/> per <see cref="ExtractText"/> call for intermediate artifacts.
 /// Depends on OCR and LLM abstractions only — backends are injected at composition root.
 /// </summary>
-public sealed class MessengerScreenshotOcrService(
-    IOcrProvider ocr,
-    ILlmProvider llm,
-    MessengerPanelSplitter splitter,
-    MessengerPanelNormalizer normalizer) : IOcrProvider
+public sealed class MessengerScreenshotOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
 {
+    private readonly MessengerPanelSplitter _splitter = new();
+    private readonly MessengerPanelNormalizer _normalizer = new();
+
     // Distinct from raw OCR cache keys: "{base}-messenger".
     public string ModelName => $"{ocr.ModelName}-messenger";
 
@@ -29,13 +28,13 @@ public sealed class MessengerScreenshotOcrService(
         MessengerOcrCallbacks? callbacks)
     {
         // Side-by-side composites become one crop per phone panel (or the whole image if no seams).
-        var panels = splitter.Split(imageBytes);
+        var panels = _splitter.Split(imageBytes);
 
         var texts = new List<string>(panels.Count);
         foreach (var panel in panels)
         {
             // Dark UI / colored bubbles → dark text on a light background for Tesseract.
-            var normalized = normalizer.Normalize(panel);
+            var normalized = _normalizer.Normalize(panel);
             var text = await ocr.ExtractText(normalized, languages, ct);
             callbacks?.OnPanelOcr?.Invoke(panel, normalized, text);
             texts.Add(text);

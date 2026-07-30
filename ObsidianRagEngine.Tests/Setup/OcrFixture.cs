@@ -28,7 +28,7 @@ public sealed class OcrFixture : IDisposable
             Timeout = TimeSpan.FromMinutes(5)
         };
         _llm = new DeepSeekOllamaService(_ollamaHttpClient, TestEnvironmentSettings.OllamaLlmModel);
-        MessengerScreenshot = new MessengerScreenshotOcrService(Tesseract, _llm, new(), new());
+        MessengerScreenshot = new MessengerScreenshotOcrService(Tesseract, _llm);
     }
 
     public void Dispose()
