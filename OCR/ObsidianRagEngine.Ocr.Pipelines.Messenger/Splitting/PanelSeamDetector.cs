@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ObsidianRagEngine.Ocr.Messaging.Splitting;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Splitting;
 
 /// <summary>
 /// Finds vertical cut positions in a side-by-side messenger composite

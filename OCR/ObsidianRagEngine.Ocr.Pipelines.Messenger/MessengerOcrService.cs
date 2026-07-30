@@ -1,16 +1,16 @@
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Messaging.Merging;
-using ObsidianRagEngine.Ocr.Messaging.Normalization;
-using ObsidianRagEngine.Ocr.Messaging.Splitting;
+using ObsidianRagEngine.Ocr.Pipelines.Messenger.Merging;
+using ObsidianRagEngine.Ocr.Pipelines.Messenger.Normalization;
+using ObsidianRagEngine.Ocr.Pipelines.Messenger.Splitting;
 
-namespace ObsidianRagEngine.Ocr.Messaging;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger;
 
 /// <summary>
 /// Messenger-screenshot OCR pipeline: split panels → normalize → per-panel OCR → LLM merge/cleanup.
 /// Pass optional <see cref="MessengerOcrCallbacks"/> per <see cref="ExtractText"/> call for intermediate artifacts.
 /// Depends on OCR and LLM abstractions only — backends are injected at composition root.
 /// </summary>
-public sealed class MessengerScreenshotOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
+public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
 {
     private readonly MessengerPanelSplitter _splitter = new();
     private readonly MessengerPanelNormalizer _normalizer = new();
@@ -49,7 +49,7 @@ public sealed class MessengerScreenshotOcrService(IOcrProvider ocr, ILlmProvider
 }
 
 /// <summary>
-/// Optional per-run intermediate-result callbacks for <see cref="MessengerScreenshotOcrService.ExtractText"/>.
+/// Optional per-run intermediate-result callbacks for <see cref="MessengerOcrService.ExtractText"/>.
 /// Leave properties null to skip a hook.
 /// </summary>
 public sealed class MessengerOcrCallbacks

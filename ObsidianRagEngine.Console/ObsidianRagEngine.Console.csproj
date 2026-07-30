@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Tesseract\ObsidianRagEngine.Ocr.Tesseract.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeekOllama\ObsidianRagEngine.Llm.DeepSeekOllama.csproj" />
   </ItemGroup>
 

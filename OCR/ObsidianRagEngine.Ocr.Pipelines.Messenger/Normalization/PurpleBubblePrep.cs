@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ObsidianRagEngine.Ocr.Messaging.Normalization;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Normalization;
 
 /// <summary>
 /// Detects and rewrites purple/violet messenger bubbles for OCR (dark or light theme).

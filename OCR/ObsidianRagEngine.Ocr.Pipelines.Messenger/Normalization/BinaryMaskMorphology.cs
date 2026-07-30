@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr.Messaging.Normalization;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Normalization;
 
 /// <summary>
 /// 1px-radius morphological close (dilate then erode) for binary masks.

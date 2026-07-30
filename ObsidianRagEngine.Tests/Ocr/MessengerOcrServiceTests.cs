@@ -1,6 +1,6 @@
 using FluentAssertions;
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Messaging;
+using ObsidianRagEngine.Ocr.Pipelines.Messenger;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 

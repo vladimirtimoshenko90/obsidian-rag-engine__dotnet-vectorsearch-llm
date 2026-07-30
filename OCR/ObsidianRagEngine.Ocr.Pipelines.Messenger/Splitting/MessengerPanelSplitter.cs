@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace ObsidianRagEngine.Ocr.Messaging.Splitting;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Splitting;
 
 /// <summary>
 /// Splits a side-by-side messenger screenshot composite into individual panel images

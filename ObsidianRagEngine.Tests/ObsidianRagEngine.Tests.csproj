@@ -30,7 +30,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ObsidianRagEngine.Console\ObsidianRagEngine.Console.csproj" />
-    <ProjectReference Include="..\ObsidianRagEngine.Ocr\ObsidianRagEngine.Ocr.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Tesseract\ObsidianRagEngine.Ocr.Tesseract.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Pipelines.Messenger\ObsidianRagEngine.Ocr.Pipelines.Messenger.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeekOllama\ObsidianRagEngine.Llm.DeepSeekOllama.csproj" />
   </ItemGroup>
 

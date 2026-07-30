@@ -1,5 +1,5 @@
 using ObsidianRagEngine.Llm.DeepSeekOllama;
-using ObsidianRagEngine.Ocr.Messaging;
+using ObsidianRagEngine.Ocr.Pipelines.Messenger;
 using ObsidianRagEngine.Ocr.Tesseract;
 
 namespace ObsidianRagEngine.Tests.Setup;
@@ -11,7 +11,7 @@ public sealed class OcrFixture : IDisposable
 
     private readonly HttpClient _ollamaHttpClient;
     private readonly DeepSeekOllamaService _llm;
-    public MessengerScreenshotOcrService MessengerScreenshot { get; }
+    public MessengerOcrService MessengerScreenshot { get; }
 
     public OcrFixture()
     {
@@ -28,7 +28,7 @@ public sealed class OcrFixture : IDisposable
             Timeout = TimeSpan.FromMinutes(5)
         };
         _llm = new DeepSeekOllamaService(_ollamaHttpClient, TestEnvironmentSettings.OllamaLlmModel);
-        MessengerScreenshot = new MessengerScreenshotOcrService(Tesseract, _llm);
+        MessengerScreenshot = new MessengerOcrService(Tesseract, _llm);
     }
 
     public void Dispose()
