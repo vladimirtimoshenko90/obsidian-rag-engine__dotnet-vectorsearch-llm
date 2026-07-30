@@ -4,49 +4,38 @@ using ObsidianRagEngine.Ocr.Tesseract;
 
 namespace ObsidianRagEngine.Tests.Setup;
 
-/// <summary>
-/// xUnit class fixture: shared SetUp for OCR test classes, Dispose is TearDown.
-/// </summary>
 public sealed class OcrFixture : IDisposable
 {
-    public TestSettingsFixture Settings { get; } = new();
-
+    private readonly HttpClient _tesseractHttpClient;
     public TesseractOcrService Tesseract { get; }
 
-    public MessengerScreenshotOcrService MessengerScreenshot { get; }
-
-    private readonly HttpClient _tesseractHttpClient;
     private readonly HttpClient _ollamaHttpClient;
+    private readonly DeepSeekOllamaService _llm;
+    public MessengerScreenshotOcrService MessengerScreenshot { get; }
 
     public OcrFixture()
     {
         _tesseractHttpClient = new HttpClient
         {
-            BaseAddress = new Uri(Settings.TesseractUrl),
+            BaseAddress = new Uri(TestEnvironmentSettings.TesseractUrl),
             Timeout = TimeSpan.FromMinutes(2)
         };
+        Tesseract = new TesseractOcrService(_tesseractHttpClient);
 
         _ollamaHttpClient = new HttpClient
         {
-            BaseAddress = new Uri(Settings.OllamaUrl),
+            BaseAddress = new Uri(TestEnvironmentSettings.OllamaUrl),
             Timeout = TimeSpan.FromMinutes(5)
         };
-
-        var llm = new DeepSeekOllamaService(_ollamaHttpClient, Settings.OllamaLlmModel);
-
-        Tesseract = new TesseractOcrService(_tesseractHttpClient);
-
-        MessengerScreenshot = new MessengerScreenshotOcrService(
-            Tesseract,
-            llm,
-            new MessengerPanelSplitter(),
-            new MessengerPanelNormalizer());
+        _llm = new DeepSeekOllamaService(_ollamaHttpClient, TestEnvironmentSettings.OllamaLlmModel);
+        MessengerScreenshot = new MessengerScreenshotOcrService(Tesseract, _llm, new(), new());
     }
 
     public void Dispose()
     {
-        TestSettingsFixture.ConsolidateOcrResults();
         _tesseractHttpClient.Dispose();
         _ollamaHttpClient.Dispose();
+
+        OcrTestStore.ConsolidateResults();
     }
 }

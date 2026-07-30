@@ -10,19 +10,15 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
 {
     private const double MinimumSimilarity = 0.6;
 
-    public static IEnumerable<object[]> OcrTestCases =>
-        new TestSettingsFixture().OcrTestCases
-            .Select(testCase => new object[] { testCase });
-
     [Theory]
-    [MemberData(nameof(OcrTestCases))]
+    [MemberData(nameof(OcrTestStore.TheoryCases), MemberType = typeof(OcrTestStore))]
     public async Task ExtractText_FromSampleImage_MatchesExpectedText(OcrTestCase testCase)
     {
         // Arrange
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
-        
+
         var sut = fixture.MessengerScreenshot;
-        fixture.Settings.ResetOcrResultFolder(testCase, sut.ModelName);
+        OcrTestStore.ResetResultFolder(testCase, sut.ModelName);
 
         // Act
         var ocredText = await sut.ExtractText(
@@ -32,12 +28,12 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
             new MessengerOcrCallbacks
             {
                 OnPanelOcr = (raw, normalized, text) =>
-                    fixture.Settings.SavePanelOcrResult(testCase, sut.ModelName, raw, normalized, text)
+                    OcrTestStore.SavePanelResult(testCase, sut.ModelName, raw, normalized, text)
             });
 
         var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
 
-        fixture.Settings.SaveOcrResult(testCase, sut.ModelName, ocredText, score);
+        OcrTestStore.SaveResult(testCase, sut.ModelName, ocredText, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
