@@ -1,4 +1,6 @@
 using ObsidianRagEngine.Contracts;
+using ObsidianRagEngine.Ocr.Tesseract.Exceptions;
+using ObsidianRagEngine.Ocr.Tesseract.Languages;
 using System.Net.Http.Json;
 using System.Text.Json;
 

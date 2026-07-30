@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr.Tesseract;
+namespace ObsidianRagEngine.Ocr.Tesseract.Languages;
 
 /// <summary>
 /// Alpine tesseract-ocr-data packages (available language pack IDs):
