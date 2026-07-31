@@ -9,8 +9,11 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
 {
     private const double MinimumSimilarity = 0.2;   // minimal accuracy is enough, tests are just checking that "something is detected" and ocr does not fail
 
+    public static IEnumerable<object[]> TheoryCases() =>
+        OcrTestStore.AllTestCases.Select(testCase => new object[] { testCase });
+
     [Theory]
-    [MemberData(nameof(OcrTestStore.TheoryCases), MemberType = typeof(OcrTestStore))]
+    [MemberData(nameof(TheoryCases))]
     public async Task ExtractText_FromSampleImage_MatchesExpectedText(OcrTestCase testCase)
     {
         // Arrange

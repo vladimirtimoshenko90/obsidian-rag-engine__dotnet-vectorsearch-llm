@@ -14,14 +14,9 @@ public static class OcrTestStore
 
     private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
 
-    /// <summary>
-    /// xUnit <c>[MemberData]</c> source: one row per OCR case.
-    /// Use <c>[MemberData(nameof(TheoryCases), MemberType = typeof(OcrTestStore))]</c>.
-    /// </summary>
-    public static IEnumerable<object[]> TheoryCases =>
-        LoadCases().Select(testCase => new object[] { testCase });
+    public static IReadOnlyList<OcrTestCase> AllTestCases => AllTestCasesLazy.Value;
 
-    public static IReadOnlyList<OcrTestCase> LoadCases()
+    private static readonly Lazy<IReadOnlyList<OcrTestCase>> AllTestCasesLazy = new(() =>
     {
         // Project-source ___testdata (gitignored, not copied to bin, available in local env)
         var rootDir = GetSourceTestdataRoot();
@@ -39,7 +34,7 @@ public static class OcrTestStore
         }
 
         return testCases;
-    }
+    });
 
     public static void ResetResultFolder(OcrTestCase testCase, string ocrModel)
     {

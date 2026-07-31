@@ -12,7 +12,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
 
     public static IEnumerable<object[]> TheoryCases()
     {
-        foreach (var testCase in OcrTestStore.LoadCases())
+        foreach (var testCase in OcrTestStore.AllTestCases)
             foreach (var llm in LlmProviders.All)
                 yield return [testCase, llm];
     }
