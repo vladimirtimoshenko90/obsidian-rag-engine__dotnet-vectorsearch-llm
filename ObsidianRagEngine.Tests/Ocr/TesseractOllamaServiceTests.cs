@@ -23,14 +23,14 @@ public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<Ocr
         OcrTestStore.ResetResultFolder(testCase, sut.ModelName);
 
         // Act
-        var ocredText = await sut.ExtractText(
+        var ocrResult = await sut.ExtractText(
             imageBytes,
             [OcrLanguage.Russian, OcrLanguage.English],
             CancellationToken.None);
 
-        var score = TextComparer.Compare(ocredText, testCase.ExpectedText);
+        var score = TextComparer.Compare(ocrResult.Text, testCase.ExpectedText);
 
-        OcrTestStore.SaveResult(testCase, sut.ModelName, ocredText, score);
+        OcrTestStore.SaveResult(testCase, sut.ModelName, ocrResult.Text, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);

@@ -9,7 +9,7 @@ public class DeepSeekOllamaService(HttpClient httpClient, string modelName)
 {
     public string ModelName => modelName;
 
-    public async Task<string> Complete(string prompt, CancellationToken ct)
+    public async Task<LlmCallResult> Complete(string prompt, CancellationToken ct)
     {
         var response = await httpClient.PostAsJsonAsync(
             "/api/generate",
@@ -17,7 +17,7 @@ public class DeepSeekOllamaService(HttpClient httpClient, string modelName)
             ct);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(ct);
-        return result!.Response ?? string.Empty;
+        return new LlmCallResult(result!.Response ?? string.Empty, Cost: 0m, InputTokens: 0, OutputTokens: 0);
     }
 
     private sealed record OllamaGenerateRequest(

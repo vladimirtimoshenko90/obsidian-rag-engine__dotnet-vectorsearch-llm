@@ -1,5 +1,6 @@
 using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.Exceptions;
+using ObsidianRagEngine.Llm.Pricing;
 using ObsidianRagEngine.Llm.Prompts;
 using OpenAI;
 using OpenAI.Chat;
@@ -18,10 +19,10 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
 {
     public string ModelName => model.ToApiModelId();
 
-    public Task<string> Complete(string prompt, CancellationToken ct) =>
+    public Task<LlmCallResult> Complete(string prompt, CancellationToken ct) =>
         CompleteChat([new UserChatMessage(prompt)], ct);
 
-    public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
+    public Task<LlmCallResult> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
         CompleteChatCore(messages, ct, jsonMode: false, thinkingMode);
 
     public async Task<T> AskJson<T>(string question, CancellationToken ct, bool thinkingMode = false)
@@ -36,18 +37,18 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
 
         try
         {
-            return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
+            return JsonSerializer.Deserialize<T>(json.Text, AskJsonPromptBuilder.JsonOptions)!;
         }
         catch
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
             messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
             json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
-            return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
+            return JsonSerializer.Deserialize<T>(json.Text, AskJsonPromptBuilder.JsonOptions)!;
         }
     }
 
-    private async Task<string> CompleteChatCore(
+    private async Task<LlmCallResult> CompleteChatCore(
         IReadOnlyList<ChatMessage> messages,
         CancellationToken ct,
         bool jsonMode,
@@ -77,9 +78,15 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
         try
         {
             var result = await chatClient.CompleteChatAsync(messages, chatOptions, ct);
-            return result.Value.Content is { Count: > 0 }
+            var text = result.Value.Content is { Count: > 0 }
                 ? result.Value.Content[0].Text ?? string.Empty
                 : string.Empty;
+            var usage = result.Value.Usage;
+            return new LlmCallResult(
+                text,
+                LlmCostCalculator.Cost(model, usage),
+                usage?.InputTokenCount ?? 0,
+                usage?.OutputTokenCount ?? 0);
         }
         catch (ClientResultException ex)
         {

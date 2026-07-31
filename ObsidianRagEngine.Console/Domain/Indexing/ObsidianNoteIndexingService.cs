@@ -36,7 +36,7 @@ public class ObsidianNoteIndexingService(
             if (ocrResult is null)
             {
                 var imageBytes = await File.ReadAllBytesAsync(imagePath, ct);
-                var extractedText = await ocr.ExtractText(
+                var extractResult = await ocr.ExtractText(
                     imageBytes,
                     [OcrLanguage.Russian, OcrLanguage.English],
                     ct);
@@ -45,7 +45,7 @@ public class ObsidianNoteIndexingService(
                 {
                     FilePath = imagePath,
                     OcrModel = ocr.ModelName,
-                    ExtractedText = extractedText
+                    ExtractedText = extractResult.Text
                 }, ct);
             }
 

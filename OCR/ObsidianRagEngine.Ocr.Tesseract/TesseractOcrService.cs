@@ -14,7 +14,7 @@ public class TesseractOcrService(HttpClient httpClient) : IOcrProvider
 {
     public string ModelName => "tesseract";
 
-    public async Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
+    public async Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
     {
         var optionsJson = JsonSerializer.Serialize(new
         {
@@ -44,7 +44,7 @@ public class TesseractOcrService(HttpClient httpClient) : IOcrProvider
                 data.Stderr);
         }
 
-        return data.Stdout?.Trim() ?? string.Empty;
+        return new LlmCallResult(data.Stdout?.Trim() ?? string.Empty, Cost: 0m, InputTokens: 0, OutputTokens: 0);
     }
 
     private sealed record TesseractWrapper(TesseractData Data);

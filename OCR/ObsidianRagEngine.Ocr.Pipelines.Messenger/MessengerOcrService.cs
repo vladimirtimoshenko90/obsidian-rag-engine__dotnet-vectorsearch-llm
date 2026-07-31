@@ -17,15 +17,17 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
 
     public string ModelName => $"messenger__{ocr.ModelName}__{llm.ModelName}";
 
-    public Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct) =>
+    public Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct) =>
         ExtractText(imageBytes, languages, ct, callbacks: null);
 
-    public async Task<string> ExtractText(
+    public async Task<LlmCallResult> ExtractText(
         byte[] imageBytes,
         IReadOnlyList<OcrLanguage> languages,
         CancellationToken ct,
         MessengerOcrCallbacks? callbacks)
     {
+        var metrics = new CallMetricsTotals();
+
         // Side-by-side composites become one crop per phone panel (or the whole image if no seams).
         var panels = _splitter.Split(imageBytes);
 
@@ -34,16 +36,34 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
         {
             // Dark UI / colored bubbles → dark text on a light background for Tesseract.
             var normalized = _normalizer.Normalize(panel);
-            var text = await ocr.ExtractText(normalized, languages, ct);
-            callbacks?.OnPanelOcr?.Invoke(panel, normalized, text);
-            texts.Add(text);
+
+            var ocrResult = await ocr.ExtractText(normalized, languages, ct);
+            callbacks?.OnPanelOcr?.Invoke(panel, normalized, ocrResult.Text);
+
+            texts.Add(ocrResult.Text);
+            metrics.Add(ocrResult);
         }
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
         var promptMerge = MessengerTranscriptPromptBuilder.BuildPrompt(texts);
-        var transcript = await llm.Complete(promptMerge, ct);
+        var mergeResult = await llm.Complete(promptMerge, ct);
 
-        return transcript.Trim();
+        metrics.Add(mergeResult);
+
+        return new LlmCallResult(mergeResult.Text.Trim(), metrics.Cost, metrics.InputTokens, metrics.OutputTokens);
+    }
+
+    private sealed class CallMetricsTotals
+    {
+        public decimal Cost { get; private set; }
+        public int InputTokens { get; private set; }
+        public int OutputTokens { get; private set; }
+        public void Add(LlmCallResult call)
+        {
+            Cost += call.Cost;
+            InputTokens += call.InputTokens;
+            OutputTokens += call.OutputTokens;
+        }
     }
 }
 
