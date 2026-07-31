@@ -1,0 +1,12 @@
+{
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true,
+    "**/TestResults": true,
+    "**/artifacts": true,
+    "**/*.user": true,
+    "**/*.suo": true
+  },
+  "explorer.excludeGitIgnore": true
+}
