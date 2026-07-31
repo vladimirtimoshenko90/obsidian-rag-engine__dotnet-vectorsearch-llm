@@ -71,7 +71,6 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
 
         // Kimi thinking is not first-class on the OpenAI SDK; set via JsonPatch.
         // K2_6: hybrid — toggle thinking.type. K3: always thinks — map to reasoning_effort.
-        // K2_7: always thinks; API rejects disable and has no effort dial — flag is a no-op.
 #pragma warning disable SCME0001 // JsonPatch is evaluation-only in System.ClientModel
         switch (model)
         {
