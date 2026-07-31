@@ -1,45 +1,32 @@
-using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.Alibaba;
 using ObsidianRagEngine.Llm.DeepSeek;
 using ObsidianRagEngine.Llm.Kimi;
-using OpenAI;
-using System.ClientModel;
 
 namespace ObsidianRagEngine.Tests.Setup;
 
+public enum LlmVendor
+{
+    DeepSeek,
+    Kimi,
+    Alibaba,
+}
+
+/// <summary>Identifies one cloud LLM engine + model (no live clients).</summary>
+public sealed record LlmProviderSpec(LlmVendor Vendor, string Model)
+{
+    public override string ToString() => $"{Vendor}:{Model}";
+}
+
 /// <summary>
-/// Every cloud <see cref="ILlmProvider"/> used by Messenger OCR tests:
-/// one instance per DeepSeek / Kimi / Alibaba model enum value (not DeepSeekOllama).
+/// Catalog of cloud LLM engine/model combinations used by Messenger OCR tests
+/// (not DeepSeekOllama). Does not construct clients or services.
 /// </summary>
 public static class LlmProviders
 {
-    public static IReadOnlyList<ILlmProvider> All => AllLazy.Value;
-
-    private static readonly Lazy<IReadOnlyList<ILlmProvider>> AllLazy = new(() =>
-    {
-        var providers = new List<ILlmProvider>();
-
-        var deepSeekOpenAiClient = CreateClient(TestEnvironmentSettings.DeepSeek);
-        foreach (var model in Enum.GetValues<DeepSeekAiModel>())
-            providers.Add(new DeepSeekService(deepSeekOpenAiClient, model));
-
-        var kimiOpenAiClient = CreateClient(TestEnvironmentSettings.Kimi);
-        foreach (var model in Enum.GetValues<KimiAiModel>())
-            providers.Add(new KimiService(kimiOpenAiClient, model));
-
-        var alibabaOpenAiClient = CreateClient(TestEnvironmentSettings.Alibaba);
-        foreach (var model in Enum.GetValues<AlibabaAiModel>())
-            providers.Add(new AlibabaService(alibabaOpenAiClient, model));
-
-        return providers;
-    });
-
-    private static OpenAIClient CreateClient(OpenAiCompatibleSettings settings) =>
-        new(
-            new ApiKeyCredential(settings.ApiKey),
-            new OpenAIClientOptions
-            {
-                Endpoint = settings.Endpoint,
-                NetworkTimeout = TimeSpan.FromMinutes(10),
-            });
+    public static IReadOnlyList<LlmProviderSpec> All { get; } =
+    [
+        ..Enum.GetValues<DeepSeekAiModel>().Select(m => new LlmProviderSpec(LlmVendor.DeepSeek, m.ToString())),
+        ..Enum.GetValues<KimiAiModel>().Select(m => new LlmProviderSpec(LlmVendor.Kimi, m.ToString())),
+        ..Enum.GetValues<AlibabaAiModel>().Select(m => new LlmProviderSpec(LlmVendor.Alibaba, m.ToString())),
+    ];
 }

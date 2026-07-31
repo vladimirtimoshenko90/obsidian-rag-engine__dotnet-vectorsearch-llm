@@ -13,18 +13,21 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
     public static IEnumerable<object[]> TheoryCases()
     {
         foreach (var testCase in OcrTestStore.AllTestCases)
-            foreach (var llm in LlmProviders.All)
-                yield return [testCase, llm];
+            foreach (var llmSpec in LlmProviders.All)
+                yield return [testCase, llmSpec];
     }
 
     [Theory]
     [MemberData(nameof(TheoryCases))]
     public async Task ExtractText_FromSampleImage_MatchesExpectedText(
-        OcrTestCase testCase, ILlmProvider llm)
+        OcrTestCase testCase, LlmProviderSpec llmSpec)
     {
         // Arrange
-        var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
+        var llm = fixture.GetLlmProvider(llmSpec);
         var sut = new MessengerOcrService(fixture.Tesseract, llm);
+
+        var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
+
         OcrTestStore.ResetResultFolder(testCase, sut.ModelName);
 
         // Act
