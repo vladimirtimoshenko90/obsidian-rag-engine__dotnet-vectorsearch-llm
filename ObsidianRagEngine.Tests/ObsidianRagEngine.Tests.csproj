@@ -42,10 +42,4 @@
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.Alibaba\ObsidianRagEngine.Llm.Alibaba.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

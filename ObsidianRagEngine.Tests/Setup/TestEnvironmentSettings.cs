@@ -4,7 +4,8 @@ using ObsidianRagEngine.Console.Common.Extensions;
 namespace ObsidianRagEngine.Tests.Setup;
 
 /// <summary>
-/// Loads test environment settings from appsettings (and environment overrides). Fully static.
+/// Loads settings from the Console project's <c>appsettings.json</c> +
+/// optional <c>appsettings.Development.json</c> (then environment overrides).
 /// </summary>
 public static class TestEnvironmentSettings
 {
@@ -20,9 +21,13 @@ public static class TestEnvironmentSettings
 
     static TestEnvironmentSettings()
     {
+        var consoleDir = Path.GetFullPath(Path.Combine(
+            AppContext.BaseDirectory, "..", "..", "..", "..", "ObsidianRagEngine.Console"));
+
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
+            .SetBasePath(consoleDir)
             .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.Development.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
