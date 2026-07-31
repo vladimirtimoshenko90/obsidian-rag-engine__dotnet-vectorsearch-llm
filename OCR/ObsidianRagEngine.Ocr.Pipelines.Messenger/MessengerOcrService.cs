@@ -15,8 +15,7 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
     private readonly MessengerPanelSplitter _splitter = new();
     private readonly MessengerPanelNormalizer _normalizer = new();
 
-    // Distinct from raw OCR cache keys: "{ocr}+{llm}-messenger".
-    public string ModelName => $"{ocr.ModelName}+{llm.ModelName}-messenger";
+    public string ModelName => $"messenger__{ocr.ModelName}__{llm.ModelName}";
 
     public Task<string> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct) =>
         ExtractText(imageBytes, languages, ct, callbacks: null);
