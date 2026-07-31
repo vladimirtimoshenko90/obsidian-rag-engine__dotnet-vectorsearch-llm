@@ -19,12 +19,12 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
     public string ModelName => model.ToApiModelId();
 
     public Task<string> Complete(string prompt, CancellationToken ct) =>
-        CompleteChatCore([new UserChatMessage(prompt)], ct, jsonMode: false);
+        CompleteChat([new UserChatMessage(prompt)], ct);
 
-    public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct) =>
-        CompleteChatCore(messages, ct, jsonMode: false);
+    public Task<string> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
+        CompleteChatCore(messages, ct, jsonMode: false, thinkingMode);
 
-    public async Task<T> AskJson<T>(string question, CancellationToken ct)
+    public async Task<T> AskJson<T>(string question, CancellationToken ct, bool thinkingMode = false)
     {
         List<ChatMessage> messages =
         [
@@ -32,7 +32,7 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
             new UserChatMessage(question),
         ];
 
-        var json = await CompleteChatCore(messages, ct, jsonMode: true);
+        var json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
 
         try
         {
@@ -42,7 +42,7 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
             messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
-            json = await CompleteChatCore(messages, ct, jsonMode: true);
+            json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
             return JsonSerializer.Deserialize<T>(json, AskJsonPromptBuilder.JsonOptions)!;
         }
     }
@@ -53,10 +53,14 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
             ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), LlmDefaults.OcrMediaType),
             ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
 
-        return CompleteChatCore([message], ct, jsonMode: false);
+        return CompleteChatCore([message], ct, jsonMode: false, thinkingMode: false);
     }
 
-    private async Task<string> CompleteChatCore(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool jsonMode)
+    private async Task<string> CompleteChatCore(
+        IReadOnlyList<ChatMessage> messages,
+        CancellationToken ct,
+        bool jsonMode,
+        bool thinkingMode)
     {
         var chatClient = openAIClient.GetChatClient(ModelName);
 
@@ -65,10 +69,19 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
         if (jsonMode)
             chatOptions.ResponseFormat = ChatResponseFormat.CreateJsonObjectFormat();
 
-        // K2_6 defaults to thinking on — disable explicitly. K2_7 / K3 always think (API defaults).
+        // Kimi thinking is not first-class on the OpenAI SDK; set via JsonPatch.
+        // K2_6: hybrid — toggle thinking.type. K3: always thinks — map to reasoning_effort.
+        // K2_7: always thinks; API rejects disable and has no effort dial — flag is a no-op.
 #pragma warning disable SCME0001 // JsonPatch is evaluation-only in System.ClientModel
-        if (model == KimiAiModel.K2_6)
-            chatOptions.Patch.Set("$.thinking.type"u8, "disabled");
+        switch (model)
+        {
+            case KimiAiModel.K2_6:
+                chatOptions.Patch.Set("$.thinking.type"u8, thinkingMode ? "enabled" : "disabled");
+                break;
+            case KimiAiModel.K3:
+                chatOptions.Patch.Set("$.reasoning_effort"u8, thinkingMode ? "max" : "low");
+                break;
+        }
 #pragma warning restore SCME0001
 
         try
