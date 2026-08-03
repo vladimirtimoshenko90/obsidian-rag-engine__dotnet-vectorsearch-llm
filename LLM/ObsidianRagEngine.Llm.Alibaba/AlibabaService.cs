@@ -13,7 +13,7 @@ namespace ObsidianRagEngine.Llm.Alibaba;
 /// <see cref="OpenAIClientOptions.NetworkTimeout"/> (e.g. 10 minutes) when constructing the
 /// <see cref="OpenAIClient"/> for slower calls. Endpoint and API key must be from the same region.
 /// </summary>
-public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel model) 
+public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel model)
     : ILlmProvider, IOcrProvider
 {
     public string ModelName => model.ToApiModelId();
@@ -24,7 +24,7 @@ public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel mod
     public Task<LlmCallResult> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
         CompleteChatCore(messages, ct, jsonMode: false, thinkingMode);
 
-    public async Task<T> AskJson<T>(string question, CancellationToken ct, bool thinkingMode = false)
+    public async Task<LlmCallResult<T>> AskJson<T>(string question, CancellationToken ct, bool thinkingMode = false)
     {
         List<ChatMessage> messages =
         [
@@ -32,18 +32,17 @@ public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel mod
             new UserChatMessage(question),
         ];
 
-        var json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
-
         try
         {
-            return JsonSerializer.Deserialize<T>(json.Text, AskJsonPromptBuilder.JsonOptions)!;
+            var result = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
+            return result.ToTyped(text => JsonSerializer.Deserialize<T>(text, AskJsonPromptBuilder.JsonOptions)!);
         }
         catch
         {
             // Docs: empty/bad JSON can happen — nudge the model and retry once.
             messages.Add(new SystemChatMessage(AskJsonPromptBuilder.ClarificationPrompt));
-            json = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
-            return JsonSerializer.Deserialize<T>(json.Text, AskJsonPromptBuilder.JsonOptions)!;
+            var result = await CompleteChatCore(messages, ct, jsonMode: true, thinkingMode);
+            return result.ToTyped(text => JsonSerializer.Deserialize<T>(text, AskJsonPromptBuilder.JsonOptions)!);
         }
     }
 
