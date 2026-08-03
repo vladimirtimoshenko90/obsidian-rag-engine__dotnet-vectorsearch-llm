@@ -11,12 +11,15 @@ internal static class LlmCallResultFactory
         var text = completion.Content is { Count: > 0 }
             ? completion.Content[0].Text ?? string.Empty
             : string.Empty;
+
         var usage = completion.Usage;
+        var tokenUsage = usage is not null
+            ? new LlmTokenUsage(usage.InputTokenCount, usage.OutputTokenCount)
+            : LlmTokenUsage.Zero;
 
         return new LlmCallResult(
             text,
             LlmCostCalculator.Cost(model, usage),
-            usage?.InputTokenCount ?? 0,
-            usage?.OutputTokenCount ?? 0);
+            tokenUsage);
     }
 }

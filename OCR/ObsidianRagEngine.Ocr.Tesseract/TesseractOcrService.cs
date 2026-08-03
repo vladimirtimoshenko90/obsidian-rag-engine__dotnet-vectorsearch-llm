@@ -44,7 +44,7 @@ public class TesseractOcrService(HttpClient httpClient) : IOcrProvider
                 data.Stderr);
         }
 
-        return new LlmCallResult(data.Stdout?.Trim() ?? string.Empty, Cost: 0m, InputTokens: 0, OutputTokens: 0);
+        return new LlmCallResult(data.Stdout?.Trim() ?? string.Empty, Cost: 0m, LlmTokenUsage.Zero);
     }
 
     private sealed record TesseractWrapper(TesseractData Data);

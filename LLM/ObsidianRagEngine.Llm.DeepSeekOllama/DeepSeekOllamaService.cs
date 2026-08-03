@@ -17,7 +17,7 @@ public class DeepSeekOllamaService(HttpClient httpClient, string modelName)
             ct);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<OllamaGenerateResponse>(ct);
-        return new LlmCallResult(result!.Response ?? string.Empty, Cost: 0m, InputTokens: 0, OutputTokens: 0);
+        return new LlmCallResult(result!.Response ?? string.Empty, Cost: 0m, LlmTokenUsage.Zero);
     }
 
     private sealed record OllamaGenerateRequest(

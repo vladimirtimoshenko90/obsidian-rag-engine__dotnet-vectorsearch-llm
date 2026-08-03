@@ -50,19 +50,18 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
 
         metrics.Add(mergeResult);
 
-        return new LlmCallResult(mergeResult.Text.Trim(), metrics.Cost, metrics.InputTokens, metrics.OutputTokens);
+        return new LlmCallResult(mergeResult.Text.Trim(), metrics.Cost, metrics.Usage);
     }
 
     private sealed class CallMetricsTotals
     {
         public decimal Cost { get; private set; }
-        public int InputTokens { get; private set; }
-        public int OutputTokens { get; private set; }
-        public void Add(LlmCallResult call)
+        public LlmTokenUsage Usage { get; private set; } = LlmTokenUsage.Zero;
+
+        public void Add(LlmCallResult res)
         {
-            Cost += call.Cost;
-            InputTokens += call.InputTokens;
-            OutputTokens += call.OutputTokens;
+            Cost += res.Cost;
+            Usage += res.Usage;
         }
     }
 }
