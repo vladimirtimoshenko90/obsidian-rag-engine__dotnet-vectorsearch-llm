@@ -43,7 +43,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
 
         var score = TextComparer.Compare(ocrResult.Text, testCase.ExpectedText);
 
-        OcrTestStore.SaveResult(testCase, sut.ModelName, ocrResult.Text, score);
+        OcrTestStore.SaveResult(testCase, sut.ModelName, ocrResult, score);
 
         // Assert
         score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);

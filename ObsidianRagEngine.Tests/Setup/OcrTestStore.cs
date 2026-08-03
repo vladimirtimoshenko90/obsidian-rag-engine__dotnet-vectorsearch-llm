@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ObsidianRagEngine.Contracts;
 
 namespace ObsidianRagEngine.Tests.Setup;
 
@@ -44,13 +45,13 @@ public static class OcrTestStore
         Directory.CreateDirectory(folder);
     }
 
-    public static void SaveResult(OcrTestCase testCase, string ocrModel, string actualText, double score)
+    public static void SaveResult(OcrTestCase testCase, string ocrModel, LlmCallResult result, double score)
     {
         var folder = GetModelResultsFolder(testCase, ocrModel);
-        File.WriteAllText(Path.Combine(folder, "actual.txt"), actualText);
+        File.WriteAllText(Path.Combine(folder, "actual.txt"), result.Text);
         File.WriteAllText(
             Path.Combine(folder, "results.json"),
-            JsonSerializer.Serialize(new { score }, IndentedJson));
+            JsonSerializer.Serialize(new { score, cost = result.Cost }, IndentedJson));
     }
 
     public static void SavePanelResult(
@@ -71,7 +72,8 @@ public static class OcrTestStore
 
     /// <summary>
     /// Writes <c>results__yyyy-MM-dd_HH-mm.json</c> at the project OCR testdata root:
-    /// <c>{ "case": { "model": scoreOrNull, ... }, ... }</c> (scores rounded to 3 decimals).
+    /// <c>{ "case": { "model": { "score", "cost" } or null, ... }, ... }</c>
+    /// (scores rounded to 3 decimals).
     /// </summary>
     public static void ConsolidateResults()
     {
@@ -95,7 +97,7 @@ public static class OcrTestStore
             caseDir => Path.GetFileName(caseDir)!,
             caseDir => modelNames.ToDictionary(
                 modelName => modelName!,
-                modelName => TryReadScore(Path.Combine(caseDir, modelName!, "results.json")),
+                modelName => TryReadResult(Path.Combine(caseDir, modelName!, "results.json")),
                 StringComparer.OrdinalIgnoreCase),
             StringComparer.OrdinalIgnoreCase);
 
@@ -134,7 +136,7 @@ public static class OcrTestStore
             .Where(dir => File.Exists(Path.Combine(dir, "expected.txt")))
             .OrderBy(dir => Path.GetFileName(dir), StringComparer.OrdinalIgnoreCase);
 
-    private static double? TryReadScore(string resultsPath)
+    private static OcrRunMetrics? TryReadResult(string resultsPath)
     {
         if (!File.Exists(resultsPath))
             return null;
@@ -142,12 +144,22 @@ public static class OcrTestStore
         try
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(resultsPath));
-            if (doc.RootElement.TryGetProperty("score", out var score) &&
-                score.ValueKind == JsonValueKind.Number &&
-                score.TryGetDouble(out var value))
+            if (!doc.RootElement.TryGetProperty("score", out var score) ||
+                score.ValueKind != JsonValueKind.Number ||
+                !score.TryGetDouble(out var scoreValue))
             {
-                return Math.Round(value, 3);
+                return null;
             }
+
+            decimal? cost = null;
+            if (doc.RootElement.TryGetProperty("cost", out var costEl) &&
+                costEl.ValueKind == JsonValueKind.Number &&
+                costEl.TryGetDecimal(out var costValue))
+            {
+                cost = costValue;
+            }
+
+            return new OcrRunMetrics(Math.Round(scoreValue, 3), cost);
         }
         catch (JsonException)
         {
@@ -167,6 +179,9 @@ public static class OcrTestStore
     private static string SanitizeModelName(string ocrModel) =>
         string.Join("_", ocrModel.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
 }
+
+/// <summary>Per-model metrics written into consolidated OCR result snapshots.</summary>
+public sealed record OcrRunMetrics(double Score, decimal? Cost);
 
 /// <summary>
 /// Image under test for OCR: path to the source file and the text expected after recognition.
