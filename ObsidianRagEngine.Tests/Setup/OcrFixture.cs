@@ -61,6 +61,9 @@ public sealed class OcrFixture : IDisposable
         return provider;
     }
 
+    public IOcrProvider? GetOcrProvider(LlmProviderSpec llmSpec)
+        => GetLlmProvider(llmSpec) as IOcrProvider;
+
     public void Dispose()
     {
         _tesseractHttpClient.Dispose();
