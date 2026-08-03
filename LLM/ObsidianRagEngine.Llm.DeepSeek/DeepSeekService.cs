@@ -19,7 +19,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
     public string ModelName => model.ToApiModelId();
 
     public Task<LlmCallResult> Complete(string prompt, CancellationToken ct) =>
-        CompleteChat([new UserChatMessage(prompt)], ct);
+        CompleteChatCore([new UserChatMessage(prompt)], ct, jsonMode: false, thinkingMode: false);
 
     public Task<LlmCallResult> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
         CompleteChatCore(messages, ct, jsonMode: false, thinkingMode);
