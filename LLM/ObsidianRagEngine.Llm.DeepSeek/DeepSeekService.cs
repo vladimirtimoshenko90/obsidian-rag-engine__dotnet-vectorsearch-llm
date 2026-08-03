@@ -1,6 +1,5 @@
 using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.Exceptions;
-using ObsidianRagEngine.Llm.Pricing;
 using ObsidianRagEngine.Llm.Prompts;
 using OpenAI;
 using OpenAI.Chat;
@@ -78,15 +77,7 @@ public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel m
         try
         {
             var result = await chatClient.CompleteChatAsync(messages, chatOptions, ct);
-            var text = result.Value.Content is { Count: > 0 }
-                ? result.Value.Content[0].Text ?? string.Empty
-                : string.Empty;
-            var usage = result.Value.Usage;
-            return new LlmCallResult(
-                text,
-                LlmCostCalculator.Cost(model, usage),
-                usage?.InputTokenCount ?? 0,
-                usage?.OutputTokenCount ?? 0);
+            return LlmCallResultFactory.FromChatCompletion(result.Value, model);
         }
         catch (ClientResultException ex)
         {
