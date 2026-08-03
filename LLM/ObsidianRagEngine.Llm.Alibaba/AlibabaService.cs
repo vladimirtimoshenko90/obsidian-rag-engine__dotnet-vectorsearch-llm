@@ -14,7 +14,7 @@ namespace ObsidianRagEngine.Llm.Alibaba;
 /// <see cref="OpenAIClient"/> for slower calls. Endpoint and API key must be from the same region.
 /// </summary>
 public sealed class AlibabaService(OpenAIClient openAIClient, AlibabaAiModel model)
-    : ILlmProvider, IOcrProvider
+    : ILlmProvider, ILlmJsonProvider, IOcrProvider
 {
     public string ModelName => model.ToApiModelId();
 

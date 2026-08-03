@@ -14,7 +14,7 @@ namespace ObsidianRagEngine.Llm.Kimi;
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
 public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model) 
-    : ILlmProvider, IOcrProvider
+    : ILlmProvider, ILlmJsonProvider, IOcrProvider
 {
     public string ModelName => model.ToApiModelId();
 

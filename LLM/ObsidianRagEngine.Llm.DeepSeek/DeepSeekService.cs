@@ -14,7 +14,7 @@ namespace ObsidianRagEngine.Llm.DeepSeek;
 /// <see cref="OpenAIClient"/> for slower calls.
 /// </summary>
 public sealed class DeepSeekService(OpenAIClient openAIClient, DeepSeekAiModel model) 
-    : ILlmProvider
+    : ILlmProvider, ILlmJsonProvider
 {
     public string ModelName => model.ToApiModelId();
 
