@@ -5,7 +5,7 @@ using ObsidianRagEngine.Tests.Setup;
 
 namespace ObsidianRagEngine.Tests.Ocr;
 
-public class TesseractOllamaServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
+public class TesseractOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
 {
     private const double MinimumSimilarity = 0.2;   // minimal accuracy is enough, tests are just checking that "something is detected" and ocr does not fail
 
