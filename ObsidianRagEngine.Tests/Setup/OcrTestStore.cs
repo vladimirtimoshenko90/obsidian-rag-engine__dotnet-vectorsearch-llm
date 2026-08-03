@@ -72,8 +72,11 @@ public static class OcrTestStore
 
     /// <summary>
     /// Writes <c>results__yyyy-MM-dd_HH-mm.json</c> at the project OCR testdata root:
-    /// <c>{ "case": { "model": { "score", "cost" } or null, ... }, ... }</c>
-    /// (scores rounded to 3 decimals).
+    /// <c>{ "byCase": { "case": { "model": score } }, "byModel": { "model": { "avgScore", "totalCost", "successfulRuns", "successRate" } } }</c>
+    /// <c>byCase</c> sorted by score desc; <c>byModel</c> sorted by avgScore desc.
+    /// <c>successfulRuns</c> = folders with a readable <c>results.json</c>; <c>successRate</c> = integer percent of model folders that succeeded (e.g. <c>"80%"</c>).
+    /// Failed runs (no <c>results.json</c>) are omitted from <c>byCase</c>, but still count in <c>byModel</c>
+    /// toward <c>avgScore</c> and <c>totalCost</c> as score/cost <c>0</c>.
     /// </summary>
     public static void ConsolidateResults()
     {
@@ -85,30 +88,91 @@ public static class OcrTestStore
         if (caseDirs.Count == 0)
             return;
 
-        var modelNames = caseDirs
-            .SelectMany(Directory.EnumerateDirectories)
-            .Select(Path.GetFileName)
-            .Where(name => !string.IsNullOrEmpty(name))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var byCase = new Dictionary<string, Dictionary<string, double>>(StringComparer.OrdinalIgnoreCase);
+        var accumulators = new Dictionary<string, ModelAccumulator>(StringComparer.OrdinalIgnoreCase);
 
-        var consolidated = caseDirs.ToDictionary(
-            caseDir => Path.GetFileName(caseDir)!,
-            caseDir => modelNames.ToDictionary(
-                modelName => modelName!,
-                modelName => TryReadResult(Path.Combine(caseDir, modelName!, "results.json")),
-                StringComparer.OrdinalIgnoreCase),
-            StringComparer.OrdinalIgnoreCase);
+        foreach (var caseDir in caseDirs)
+        {
+            var caseName = Path.GetFileName(caseDir)!;
+            var caseScores = new List<(string Model, double Score)>();
 
+            foreach (var modelDir in Directory.EnumerateDirectories(caseDir)
+                         .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
+            {
+                var modelName = Path.GetFileName(modelDir)!;
+                if (!accumulators.TryGetValue(modelName, out var acc))
+                    accumulators[modelName] = acc = new ModelAccumulator();
+
+                acc.AddRun();
+
+                var metrics = TryReadResult(Path.Combine(modelDir, "results.json"));
+                if (metrics is null)
+                    continue;
+
+                caseScores.Add((modelName, metrics.Score));
+                acc.AddSuccess(metrics);
+            }
+
+            // Insert in score-desc order so System.Text.Json emits a compact object in that order.
+            var orderedScores = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+            foreach (var entry in caseScores
+                         .OrderByDescending(e => e.Score)
+                         .ThenBy(e => e.Model, StringComparer.OrdinalIgnoreCase))
+            {
+                orderedScores[entry.Model] = entry.Score;
+            }
+
+            byCase[caseName] = orderedScores;
+        }
+
+        var byModel = accumulators
+            .Select(kv => (Model: kv.Key, Summary: kv.Value.ToSummary()))
+            .OrderByDescending(entry => entry.Summary.AvgScore ?? double.MinValue)
+            .ThenBy(entry => entry.Model, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                entry => entry.Model,
+                entry => entry.Summary,
+                StringComparer.OrdinalIgnoreCase);
+
+        var document = new { byCase, byModel };
         var outputPath = Path.Combine(ocrRoot, $"results__{DateTime.Now:yyyy-MM-dd_HH-mm}.json");
-        File.WriteAllText(outputPath, JsonSerializer.Serialize(consolidated, IndentedJson));
+        File.WriteAllText(outputPath, JsonSerializer.Serialize(document, IndentedJson));
 
         foreach (var path in Directory.EnumerateFiles(ocrRoot, "results__*.json")
                      .OrderByDescending(File.GetLastWriteTimeUtc)
                      .Skip(MaxConsolidatedSnapshots))
         {
             File.Delete(path);
+        }
+    }
+
+    private sealed class ModelAccumulator
+    {
+        private double _scoreSum;
+        private decimal _costSum;
+        private int _runs;
+        private int _successfulRuns;
+
+        public void AddRun() => _runs++;
+
+        public void AddSuccess(OcrRunMetrics metrics)
+        {
+            _scoreSum += metrics.Score;
+            _costSum += metrics.Cost ?? 0m;
+            _successfulRuns++;
+        }
+
+        public OcrModelSummary ToSummary()
+        {
+            var successRatePercent = _runs > 0
+                ? (int)Math.Round(100.0 * _successfulRuns / _runs)
+                : 0;
+
+            return new(
+                AvgScore: _runs > 0 ? Math.Round(_scoreSum / _runs, 3) : null,
+                TotalCost: Math.Round(_costSum, 4),
+                SuccessfulRuns: _successfulRuns,
+                SuccessRate: $"{successRatePercent}%");
         }
     }
 
@@ -182,6 +246,13 @@ public static class OcrTestStore
 
 /// <summary>Per-model metrics written into consolidated OCR result snapshots.</summary>
 public sealed record OcrRunMetrics(double Score, decimal? Cost);
+
+/// <summary>Per-model rollup across cases in a consolidated snapshot.</summary>
+public sealed record OcrModelSummary(
+    double? AvgScore,
+    decimal TotalCost,
+    int SuccessfulRuns,
+    string SuccessRate);
 
 /// <summary>
 /// Image under test for OCR: path to the source file and the text expected after recognition.
