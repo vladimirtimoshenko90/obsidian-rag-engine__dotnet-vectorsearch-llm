@@ -14,8 +14,8 @@ public sealed class OpenRouterService(OpenAIClient openAIClient, OpenRouterAiMod
 {
     public string ModelName => $"openrouter__{model.ToApiModelId()}";
 
-    public Task<LlmCallResult> Complete(string prompt, CancellationToken ct) =>
-        CompleteChatCore([new UserChatMessage(prompt)], ct, thinkingMode: false);
+    public Task<LlmCallResult> Complete(string prompt, CancellationToken ct, bool thinkingMode = false) =>
+        CompleteChatCore([new UserChatMessage(prompt)], ct, thinkingMode);
 
     public Task<LlmCallResult> CompleteChat(IReadOnlyList<ChatMessage> messages, CancellationToken ct, bool thinkingMode = false) =>
         CompleteChatCore(messages, ct, thinkingMode);

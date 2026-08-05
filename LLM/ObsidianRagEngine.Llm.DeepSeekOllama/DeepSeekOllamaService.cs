@@ -9,8 +9,9 @@ public class DeepSeekOllamaService(HttpClient httpClient, string modelName)
 {
     public string ModelName => modelName;
 
-    public async Task<LlmCallResult> Complete(string prompt, CancellationToken ct)
+    public async Task<LlmCallResult> Complete(string prompt, CancellationToken ct, bool thinkingMode = false)
     {
+        // Ollama /api/generate has no thinking toggle; thinkingMode is ignored.
         var response = await httpClient.PostAsJsonAsync(
             "/api/generate",
             new OllamaGenerateRequest(modelName, prompt, Stream: false),
