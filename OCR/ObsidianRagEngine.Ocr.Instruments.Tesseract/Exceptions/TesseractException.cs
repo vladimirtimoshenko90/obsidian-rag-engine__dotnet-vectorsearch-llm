@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr.Tesseract.Exceptions;
+namespace ObsidianRagEngine.Ocr.Instruments.Tesseract.Exceptions;
 
 public class TesseractException : Exception
 {

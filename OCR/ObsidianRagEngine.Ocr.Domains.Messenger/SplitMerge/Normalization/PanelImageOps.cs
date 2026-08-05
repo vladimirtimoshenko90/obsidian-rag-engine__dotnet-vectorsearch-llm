@@ -2,7 +2,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Normalization;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Normalization;
 
 /// <summary>
 /// Shared ImageSharp helpers for panel normalization.

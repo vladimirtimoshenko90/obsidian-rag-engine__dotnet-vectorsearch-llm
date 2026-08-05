@@ -1,6 +1,6 @@
 using ObsidianRagEngine.Contracts;
 
-namespace ObsidianRagEngine.Ocr.Tesseract.Languages;
+namespace ObsidianRagEngine.Ocr.Instruments.Tesseract.Languages;
 
 /// <summary>
 /// Maps shared <see cref="OcrLanguage"/> values to Alpine tesseract-ocr-data pack IDs.

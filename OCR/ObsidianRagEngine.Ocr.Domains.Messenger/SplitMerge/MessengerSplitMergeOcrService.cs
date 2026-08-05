@@ -1,9 +1,9 @@
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Merging;
-using ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Normalization;
-using ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Splitting;
+using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Merging;
+using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Normalization;
+using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Splitting;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge;
 
 /// <summary>
 /// Messenger-screenshot OCR pipeline: split panels → normalize → per-panel OCR → LLM merge/cleanup.

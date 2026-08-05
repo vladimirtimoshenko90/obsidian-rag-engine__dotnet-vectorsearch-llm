@@ -1,6 +1,6 @@
 using FluentAssertions;
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge;
+using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 

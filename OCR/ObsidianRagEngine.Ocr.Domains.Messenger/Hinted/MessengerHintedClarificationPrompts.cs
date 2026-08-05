@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Hinted;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.Hinted;
 
 /// <summary>
 /// Clarification messages used by <see cref="MessengerHintedOcrService"/> for messenger

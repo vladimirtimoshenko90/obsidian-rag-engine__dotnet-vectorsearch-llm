@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Tesseract\ObsidianRagEngine.Ocr.Tesseract.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Instruments.Tesseract\ObsidianRagEngine.Ocr.Instruments.Tesseract.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeekOllama\ObsidianRagEngine.Llm.DeepSeekOllama.csproj" />
   </ItemGroup>
 

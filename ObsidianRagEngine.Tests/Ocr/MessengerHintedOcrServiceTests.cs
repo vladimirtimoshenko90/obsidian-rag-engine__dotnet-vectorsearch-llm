@@ -1,6 +1,6 @@
 using FluentAssertions;
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Pipelines.Messenger.Hinted;
+using ObsidianRagEngine.Ocr.Domains.Messenger.Hinted;
 using ObsidianRagEngine.Tests.Ocr.Helpers;
 using ObsidianRagEngine.Tests.Setup;
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -35,8 +35,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ObsidianRagEngine.Console\ObsidianRagEngine.Console.csproj" />
-    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Tesseract\ObsidianRagEngine.Ocr.Tesseract.csproj" />
-    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Pipelines.Messenger\ObsidianRagEngine.Ocr.Pipelines.Messenger.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Instruments.Tesseract\ObsidianRagEngine.Ocr.Instruments.Tesseract.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Domains.Messenger\ObsidianRagEngine.Ocr.Domains.Messenger.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeek\ObsidianRagEngine.Llm.DeepSeek.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.Kimi\ObsidianRagEngine.Llm.Kimi.csproj" />
     <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.Alibaba\ObsidianRagEngine.Llm.Alibaba.csproj" />

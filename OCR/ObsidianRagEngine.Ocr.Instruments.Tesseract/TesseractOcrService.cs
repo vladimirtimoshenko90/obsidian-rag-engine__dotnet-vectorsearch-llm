@@ -1,10 +1,10 @@
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Tesseract.Exceptions;
-using ObsidianRagEngine.Ocr.Tesseract.Languages;
+using ObsidianRagEngine.Ocr.Instruments.Tesseract.Exceptions;
+using ObsidianRagEngine.Ocr.Instruments.Tesseract.Languages;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace ObsidianRagEngine.Ocr.Tesseract;
+namespace ObsidianRagEngine.Ocr.Instruments.Tesseract;
 
 /// <summary>
 /// Client for the docker-hosted Tesseract HTTP OCR server:

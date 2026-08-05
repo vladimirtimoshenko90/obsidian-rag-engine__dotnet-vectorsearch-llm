@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Merging;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Merging;
 
 /// <summary>
 /// Builds the LLM prompt that merges ordered messenger-panel OCR strings into one cleaned chat transcript.

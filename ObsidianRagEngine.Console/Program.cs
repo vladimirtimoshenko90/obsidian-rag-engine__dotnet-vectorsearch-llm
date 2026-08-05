@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
@@ -7,7 +7,7 @@ using ObsidianRagEngine.Console.Domain.Indexing;
 using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Console.Domain.Vectorization;
 using ObsidianRagEngine.Llm.DeepSeekOllama;
-using ObsidianRagEngine.Ocr.Tesseract;
+using ObsidianRagEngine.Ocr.Instruments.Tesseract;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 

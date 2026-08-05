@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Normalization;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Normalization;
 
 /// <summary>
 /// Maps remaining saturated bubbles toward document style: colored fill → near-white;

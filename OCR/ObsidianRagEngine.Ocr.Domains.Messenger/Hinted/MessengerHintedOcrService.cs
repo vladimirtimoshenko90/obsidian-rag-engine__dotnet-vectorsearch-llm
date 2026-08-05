@@ -1,6 +1,6 @@
 using ObsidianRagEngine.Contracts;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Hinted;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.Hinted;
 
 /// <summary>
 /// Thin wrapper: runs inner vision OCR on a full messenger composite image with a fixed

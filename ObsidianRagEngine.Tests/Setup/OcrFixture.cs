@@ -3,7 +3,7 @@ using ObsidianRagEngine.Llm.Alibaba;
 using ObsidianRagEngine.Llm.DeepSeek;
 using ObsidianRagEngine.Llm.Kimi;
 using ObsidianRagEngine.Llm.OpenRouter;
-using ObsidianRagEngine.Ocr.Tesseract;
+using ObsidianRagEngine.Ocr.Instruments.Tesseract;
 using OpenAI;
 using System.ClientModel;
 

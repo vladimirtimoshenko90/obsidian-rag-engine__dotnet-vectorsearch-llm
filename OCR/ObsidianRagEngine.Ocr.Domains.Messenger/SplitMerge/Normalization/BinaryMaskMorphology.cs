@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Normalization;
+namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Normalization;
 
 /// <summary>
 /// 1px-radius morphological close (dilate then erode) for binary masks.

@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.37012.4
@@ -25,9 +25,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Llm.DeepS
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OCR", "OCR", "{630E08D6-04FA-BCA4-1175-EEE0126773C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Ocr.Tesseract", "OCR\ObsidianRagEngine.Ocr.Tesseract\ObsidianRagEngine.Ocr.Tesseract.csproj", "{9675D2EA-9543-4079-8CD5-4A1151964F5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Ocr.Instruments.Tesseract", "OCR\ObsidianRagEngine.Ocr.Instruments.Tesseract\ObsidianRagEngine.Ocr.Instruments.Tesseract.csproj", "{9675D2EA-9543-4079-8CD5-4A1151964F5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Ocr.Pipelines.Messenger", "OCR\ObsidianRagEngine.Ocr.Pipelines.Messenger\ObsidianRagEngine.Ocr.Pipelines.Messenger.csproj", "{322E0906-A494-48F4-B142-673B7997429F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Ocr.Domains.Messenger", "OCR\ObsidianRagEngine.Ocr.Domains.Messenger\ObsidianRagEngine.Ocr.Domains.Messenger.csproj", "{322E0906-A494-48F4-B142-673B7997429F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Llm.OpenRouter", "LLM\ObsidianRagEngine.Llm.OpenRouter\ObsidianRagEngine.Llm.OpenRouter.csproj", "{5B627560-2F5B-41A0-B798-0599CA767533}"
 EndProject
