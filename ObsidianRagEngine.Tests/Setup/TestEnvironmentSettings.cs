@@ -18,6 +18,7 @@ public static class TestEnvironmentSettings
     public static OpenAiCompatibleSettings DeepSeek { get; }
     public static OpenAiCompatibleSettings Kimi { get; }
     public static OpenAiCompatibleSettings Alibaba { get; }
+    public static OpenAiCompatibleSettings OpenRouter { get; }
 
     static TestEnvironmentSettings()
     {
@@ -38,6 +39,7 @@ public static class TestEnvironmentSettings
         DeepSeek = ReadOpenAi(configuration, "Llm:DeepSeek");
         Kimi = ReadOpenAi(configuration, "Llm:Kimi");
         Alibaba = ReadOpenAi(configuration, "Llm:Alibaba");
+        OpenRouter = ReadOpenAi(configuration, "Llm:OpenRouter");
     }
 
     private static OpenAiCompatibleSettings ReadOpenAi(IConfiguration configuration, string section) =>

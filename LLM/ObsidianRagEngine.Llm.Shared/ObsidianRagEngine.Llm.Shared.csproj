@@ -18,6 +18,7 @@
     <InternalsVisibleTo Include="ObsidianRagEngine.Llm.Alibaba" />
     <InternalsVisibleTo Include="ObsidianRagEngine.Llm.Kimi" />
     <InternalsVisibleTo Include="ObsidianRagEngine.Llm.DeepSeek" />
+    <InternalsVisibleTo Include="ObsidianRagEngine.Llm.OpenRouter" />
   </ItemGroup>
 
 </Project>

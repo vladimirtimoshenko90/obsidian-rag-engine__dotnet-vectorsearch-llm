@@ -2,6 +2,7 @@ using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.Alibaba;
 using ObsidianRagEngine.Llm.DeepSeek;
 using ObsidianRagEngine.Llm.Kimi;
+using ObsidianRagEngine.Llm.OpenRouter;
 using ObsidianRagEngine.Ocr.Tesseract;
 using OpenAI;
 using System.ClientModel;
@@ -38,6 +39,7 @@ public sealed class OcrFixture : IDisposable
                 LlmVendor.DeepSeek => TestEnvironmentSettings.DeepSeek,
                 LlmVendor.Kimi => TestEnvironmentSettings.Kimi,
                 LlmVendor.Alibaba => TestEnvironmentSettings.Alibaba,
+                LlmVendor.OpenRouter => TestEnvironmentSettings.OpenRouter,
                 _ => throw new ArgumentOutOfRangeException(nameof(spec), spec.Vendor, "Unknown LLM vendor."),
             };
             _openAiClients[spec.Vendor] = openAiClient = new OpenAIClient(
@@ -54,6 +56,7 @@ public sealed class OcrFixture : IDisposable
             LlmVendor.DeepSeek => new DeepSeekService(openAiClient, Enum.Parse<DeepSeekAiModel>(spec.Model)),
             LlmVendor.Kimi => new KimiService(openAiClient, Enum.Parse<KimiAiModel>(spec.Model)),
             LlmVendor.Alibaba => new AlibabaService(openAiClient, Enum.Parse<AlibabaAiModel>(spec.Model)),
+            LlmVendor.OpenRouter => new OpenRouterService(openAiClient, Enum.Parse<OpenRouterAiModel>(spec.Model)),
             _ => throw new ArgumentOutOfRangeException(nameof(spec), spec.Vendor, "Unknown LLM vendor."),
         };
 
