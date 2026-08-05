@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.Normalization;
+namespace ObsidianRagEngine.Ocr.Pipelines.Messenger.SplitMerge.Normalization;
 
 /// <summary>
 /// Prepares a single messenger panel for Tesseract as a short pipeline:
