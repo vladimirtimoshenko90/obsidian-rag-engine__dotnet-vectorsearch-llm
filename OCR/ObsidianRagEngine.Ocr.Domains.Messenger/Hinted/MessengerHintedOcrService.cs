@@ -17,10 +17,12 @@ public sealed class MessengerHintedOcrService(IOcrProvider inner) : IOcrProvider
         CancellationToken ct,
         string? clarificationPrompt = null)
     {
-        var prompt = MessengerHintedClarificationPrompts.Text;
+        var promptLanguage = MessengerPromptLanguage.Resolve(languages);
+
+        var prompt = MessengerHintedClarificationPrompts.Text(promptLanguage);
 
         if (!string.IsNullOrWhiteSpace(clarificationPrompt))
-            prompt += "\n\n" + MessengerHintedClarificationPrompts.AdditionalClarification(clarificationPrompt);
+            prompt += "\n\n" + MessengerHintedClarificationPrompts.AdditionalClarification(promptLanguage, clarificationPrompt);
 
         return inner.ExtractText(imageBytes, languages, ct, prompt);
     }

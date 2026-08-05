@@ -50,7 +50,7 @@ public sealed class MessengerSplitMergeOcrService(IOcrProvider ocr, ILlmProvider
         }
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
-        var promptMerge = MessengerTranscriptPromptBuilder.BuildPrompt(texts);
+        var promptMerge = MessengerTranscriptPromptBuilder.BuildPrompt(texts, languages);
         var mergeResult = await llm.Complete(promptMerge, ct);
 
         metrics.Add(mergeResult);

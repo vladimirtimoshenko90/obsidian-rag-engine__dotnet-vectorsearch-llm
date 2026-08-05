@@ -1,12 +1,34 @@
+using ObsidianRagEngine.Contracts;
+
 namespace ObsidianRagEngine.Ocr.Domains.Messenger.Hinted;
 
 /// <summary>
 /// Clarification messages used by <see cref="MessengerHintedOcrService"/> for messenger
-/// composite screenshots. Passed to the inner <see cref="Contracts.IOcrProvider"/> as a separate chat message.
+/// composite screenshots. Passed to the inner <see cref="IOcrProvider"/> as a separate chat message.
 /// </summary>
 internal static class MessengerHintedClarificationPrompts
 {
-    public const string Text =
+    public static string Text(OcrLanguage language) => language switch
+    {
+        OcrLanguage.Russian => TextRu,
+        _ => TextEn,
+    };
+
+    /// <summary>
+    /// Formats caller-supplied clarification as a titled block to append after <see cref="Text"/>.
+    /// </summary>
+    public static string AdditionalClarification(OcrLanguage language, string clarificationPrompt)
+    {
+        var title = language switch
+        {
+            OcrLanguage.Russian => "Дополнительное уточнение:",
+            _ => "Additional clarification:",
+        };
+
+        return title + "\n" + clarificationPrompt.Trim();
+    }
+
+    private const string TextEn =
         """
         Image contents (read carefully before extracting text):
 
@@ -40,11 +62,38 @@ internal static class MessengerHintedClarificationPrompts
         - Do not describe the screenshot, summarize, translate, or invent missing words.
         """;
 
-    /// <summary>
-    /// Formats caller-supplied clarification as a titled block to append after <see cref="Text"/>.
-    /// </summary>
-    public static string AdditionalClarification(string clarificationPrompt) =>
+    private const string TextRu =
         """
-        Additional clarification:
-        """ + clarificationPrompt.Trim();
+        Содержимое изображения (внимательно прочитай перед извлечением текста):
+
+        Приложенное изображение — составной снимок экранов мобильного мессенджера. Один или
+        несколько экранов одной и той же переписки расположены рядом по горизонтали (слева
+        направо), как если бы последовательные прокрутки или устройства склеили в одну широкую
+        картинку. Между панелями могут быть видны вертикальные швы; каждый столбец — один
+        телефонный экран.
+
+        Порядок чтения:
+        1. Обрабатывай панели слева направо.
+        2. Внутри каждой панели читай сверху вниз в обычном хронологическом порядке чата
+           (старые сообщения выше, новые ниже, если UI явно не показывает иное).
+        3. Переходи между панелями так, чтобы итоговый текст следовал хронологии диалога,
+           а не одним проходом слева направо по всем столбцам сразу.
+
+        Что извлекать:
+        - Текст сообщений (пузыри), включая сленг, опечатки, эмодзи и пунктуацию как на экране.
+        - Видимые имена / заголовки участников, если они подписывают сообщения.
+        - Даты и время, относящиеся к истории чата (разделители дней, метки сообщений), если
+          они часть макета диалога.
+
+        Что пропускать:
+        - Системный и приложенийный хром: статус-бар, иконки связи/батареи, панели навигации,
+          вкладки, тулбары, поле ввода / клавиатуру, кнопку отправки.
+        - Только декоративный UI: реакции, бейджи непрочитанного, аватары как картинки
+          (не текст имени), стикеры без читаемого текста, размытые или нетекстовые плейсхолдеры медиа.
+
+        Правила вывода:
+        - Верни только текст переписки в порядке чтения выше.
+        - Сохрани исходные языки (часто смешанные), орфографию, регистр и переносы между сообщениями.
+        - Не описывай скриншот, не суммаризируй, не переводи и не выдумывай недостающие слова.
+        """;
 }
