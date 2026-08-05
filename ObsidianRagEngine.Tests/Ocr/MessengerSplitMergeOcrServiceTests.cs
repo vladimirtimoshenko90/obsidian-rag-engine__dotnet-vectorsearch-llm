@@ -17,6 +17,13 @@ public class MessengerSplitMergeOcrServiceTests(OcrFixture fixture) : IClassFixt
                 yield return [testCase, llmSpec];
     }
 
+    public static IEnumerable<object[]> DeepSeekThinkingTheoryCases()
+    {
+        foreach (var testCase in OcrTestStore.AllTestCases)
+            foreach (var llmSpec in LlmProviders.All.Where(s => s.Vendor == LlmVendor.DeepSeek))
+                yield return [testCase, llmSpec];
+    }
+
     [Theory]
     [MemberData(nameof(TheoryCases))]
     public async Task ExtractText_FromSampleImage_MatchesExpectedText(
@@ -25,6 +32,38 @@ public class MessengerSplitMergeOcrServiceTests(OcrFixture fixture) : IClassFixt
         // Arrange
         var llm = fixture.GetLlmProvider(llmSpec);
         var sut = new MessengerSplitMergeOcrService(fixture.Tesseract, llm);
+
+        var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
+
+        OcrTestStore.ResetResultFolder(testCase, sut.ModelName);
+
+        // Act
+        var ocrResult = await sut.ExtractText(
+            imageBytes,
+            [OcrLanguage.Russian, OcrLanguage.English],
+            CancellationToken.None,
+            new MessengerSplitMergeOcrCallbacks
+            {
+                OnPanelOcr = (raw, normalized, text) =>
+                    OcrTestStore.SavePanelResult(testCase, sut.ModelName, raw, normalized, text)
+            });
+
+        var score = TextComparer.Compare(ocrResult.Text, testCase.ExpectedText);
+
+        OcrTestStore.SaveResult(testCase, sut.ModelName, ocrResult, score);
+
+        // Assert
+        score.Should().BeGreaterThanOrEqualTo(MinimumSimilarity);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeepSeekThinkingTheoryCases))]
+    public async Task ExtractText_FromSampleImage_DeepSeekThinking_MatchesExpectedText(
+        OcrTestCase testCase, LlmProviderSpec llmSpec)
+    {
+        // Arrange
+        var llm = fixture.GetLlmProvider(llmSpec);
+        var sut = new MessengerSplitMergeOcrService(fixture.Tesseract, llm, thinkingMode: true);
 
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
 

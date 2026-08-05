@@ -9,12 +9,16 @@ namespace ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge;
 /// Pass optional <see cref="MessengerSplitMergeOcrCallbacks"/> per <see cref="ExtractText"/> call for intermediate artifacts.
 /// Depends on OCR and LLM abstractions only — backends are injected at composition root.
 /// </summary>
-public sealed class MessengerSplitMergeOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
+public sealed class MessengerSplitMergeOcrService(
+    IOcrProvider ocr,
+    ILlmProvider llm,
+    bool thinkingMode = false) : IOcrProvider
 {
     private readonly MessengerPanelSplitter _splitter = new();
     private readonly MessengerPanelNormalizer _normalizer = new();
 
-    public string ModelName => $"messenger_split_merge__{ocr.ModelName}__{llm.ModelName}";
+    public string ModelName 
+        => $"messenger_split_merge__{ocr.ModelName}__{llm.ModelName}{(thinkingMode ? "__thinking" : "")}";
 
     public Task<LlmCallResult> ExtractText(
         byte[] imageBytes,
@@ -50,7 +54,7 @@ public sealed class MessengerSplitMergeOcrService(IOcrProvider ocr, ILlmProvider
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
         var promptMerge = MessengerSplitMergePrompts.MergeInstructions(languages, texts);
-        var mergeResult = await llm.Complete(promptMerge, ct);
+        var mergeResult = await llm.Complete(promptMerge, ct, thinkingMode);
 
         metrics.Add(mergeResult);
 
