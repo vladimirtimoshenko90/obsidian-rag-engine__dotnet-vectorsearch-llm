@@ -1,5 +1,4 @@
 using ObsidianRagEngine.Contracts;
-using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Merging;
 using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Normalization;
 using ObsidianRagEngine.Ocr.Domains.Messenger.SplitMerge.Splitting;
 
@@ -50,7 +49,7 @@ public sealed class MessengerSplitMergeOcrService(IOcrProvider ocr, ILlmProvider
         }
 
         // Strip chrome, drop panel overlap duplicates, keep message timestamps; always run (even for one panel).
-        var promptMerge = MessengerTranscriptPromptBuilder.BuildPrompt(texts, languages);
+        var promptMerge = MessengerSplitMergePrompts.MergeInstructions(languages, texts);
         var mergeResult = await llm.Complete(promptMerge, ct);
 
         metrics.Add(mergeResult);
