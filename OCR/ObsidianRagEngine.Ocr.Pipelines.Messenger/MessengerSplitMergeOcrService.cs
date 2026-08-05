@@ -7,15 +7,15 @@ namespace ObsidianRagEngine.Ocr.Pipelines.Messenger;
 
 /// <summary>
 /// Messenger-screenshot OCR pipeline: split panels → normalize → per-panel OCR → LLM merge/cleanup.
-/// Pass optional <see cref="MessengerOcrCallbacks"/> per <see cref="ExtractText"/> call for intermediate artifacts.
+/// Pass optional <see cref="MessengerSplitMergeOcrCallbacks"/> per <see cref="ExtractText"/> call for intermediate artifacts.
 /// Depends on OCR and LLM abstractions only — backends are injected at composition root.
 /// </summary>
-public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
+public sealed class MessengerSplitMergeOcrService(IOcrProvider ocr, ILlmProvider llm) : IOcrProvider
 {
     private readonly MessengerPanelSplitter _splitter = new();
     private readonly MessengerPanelNormalizer _normalizer = new();
 
-    public string ModelName => $"messenger__{ocr.ModelName}__{llm.ModelName}";
+    public string ModelName => $"messenger_split_merge__{ocr.ModelName}__{llm.ModelName}";
 
     public Task<LlmCallResult> ExtractText(
         byte[] imageBytes,
@@ -28,7 +28,7 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
         byte[] imageBytes,
         IReadOnlyList<OcrLanguage> languages,
         CancellationToken ct,
-        MessengerOcrCallbacks? callbacks,
+        MessengerSplitMergeOcrCallbacks? callbacks,
         string? clarificationPrompt = null)
     {
         var metrics = new CallMetricsTotals();
@@ -72,10 +72,10 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
 }
 
 /// <summary>
-/// Optional per-run intermediate-result callbacks for <see cref="MessengerOcrService.ExtractText"/>.
+/// Optional per-run intermediate-result callbacks for <see cref="MessengerSplitMergeOcrService.ExtractText"/>.
 /// Leave properties null to skip a hook.
 /// </summary>
-public sealed class MessengerOcrCallbacks
+public sealed class MessengerSplitMergeOcrCallbacks
 {
     /// <summary>Called after each panel is normalized and OCR'd (raw crop, normalized image, text).</summary>
     public Action<byte[], byte[], string>? OnPanelOcr { get; init; }

@@ -6,7 +6,7 @@ using ObsidianRagEngine.Tests.Setup;
 
 namespace ObsidianRagEngine.Tests.Ocr;
 
-public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
+public class MessengerSplitMergeOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFixture>
 {
     private const double MinimumSimilarity = 0.6;
 
@@ -24,7 +24,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
     {
         // Arrange
         var llm = fixture.GetLlmProvider(llmSpec);
-        var sut = new MessengerOcrService(fixture.Tesseract, llm);
+        var sut = new MessengerSplitMergeOcrService(fixture.Tesseract, llm);
 
         var imageBytes = await File.ReadAllBytesAsync(testCase.ImagePath);
 
@@ -35,7 +35,7 @@ public class MessengerOcrServiceTests(OcrFixture fixture) : IClassFixture<OcrFix
             imageBytes,
             [OcrLanguage.Russian, OcrLanguage.English],
             CancellationToken.None,
-            new MessengerOcrCallbacks
+            new MessengerSplitMergeOcrCallbacks
             {
                 OnPanelOcr = (raw, normalized, text) =>
                     OcrTestStore.SavePanelResult(testCase, sut.ModelName, raw, normalized, text)
