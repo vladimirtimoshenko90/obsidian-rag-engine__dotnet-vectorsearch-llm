@@ -51,7 +51,15 @@ public static class OcrTestStore
         File.WriteAllText(Path.Combine(folder, "actual.txt"), result.Text);
         File.WriteAllText(
             Path.Combine(folder, "results.json"),
-            JsonSerializer.Serialize(new { score, cost = result.Cost }, IndentedJson));
+            JsonSerializer.Serialize(
+                new
+                {
+                    score,
+                    cost = result.Cost,
+                    inputTokens = result.Usage.InputTokens,
+                    outputTokens = result.Usage.OutputTokens,
+                },
+                IndentedJson));
     }
 
     public static void SavePanelResult(
@@ -72,11 +80,11 @@ public static class OcrTestStore
 
     /// <summary>
     /// Writes <c>results__yyyy-MM-dd_HH-mm.json</c> at the project OCR testdata root:
-    /// <c>{ "byCase": { "case": { "model": score } }, "byModel": { "model": { "avgScore", "totalCost", "successfulRuns", "successRate" } } }</c>
+    /// <c>{ "byCase": { "case": { "model": score } }, "byModel": { "model": { "avgScore", "totalCost", "totalInputTokens", "totalOutputTokens", "successfulRuns", "successRate" } } }</c>
     /// <c>byCase</c> sorted by score desc; <c>byModel</c> sorted by avgScore desc.
     /// <c>successfulRuns</c> = folders with a readable <c>results.json</c>; <c>successRate</c> = integer percent of model folders that succeeded (e.g. <c>"80%"</c>).
     /// Failed runs (no <c>results.json</c>) are omitted from <c>byCase</c>, but still count in <c>byModel</c>
-    /// toward <c>avgScore</c> and <c>totalCost</c> as score/cost <c>0</c>.
+    /// toward <c>avgScore</c>, <c>totalCost</c>, and token totals as score/cost/tokens <c>0</c>.
     /// </summary>
     public static void ConsolidateResults()
     {
@@ -150,6 +158,8 @@ public static class OcrTestStore
     {
         private double _scoreSum;
         private decimal _costSum;
+        private long _inputTokensSum;
+        private long _outputTokensSum;
         private int _runs;
         private int _successfulRuns;
 
@@ -159,6 +169,8 @@ public static class OcrTestStore
         {
             _scoreSum += metrics.Score;
             _costSum += metrics.Cost ?? 0m;
+            _inputTokensSum += metrics.InputTokens;
+            _outputTokensSum += metrics.OutputTokens;
             _successfulRuns++;
         }
 
@@ -171,6 +183,8 @@ public static class OcrTestStore
             return new(
                 AvgScore: _runs > 0 ? Math.Round(_scoreSum / _runs, 3) : null,
                 TotalCost: Math.Round(_costSum, 4),
+                TotalInputTokens: _inputTokensSum,
+                TotalOutputTokens: _outputTokensSum,
                 SuccessfulRuns: _successfulRuns,
                 SuccessRate: $"{successRatePercent}%");
         }
@@ -223,7 +237,10 @@ public static class OcrTestStore
                 cost = costValue;
             }
 
-            return new OcrRunMetrics(Math.Round(scoreValue, 3), cost);
+            var inputTokens = TryReadInt(doc.RootElement, "inputTokens");
+            var outputTokens = TryReadInt(doc.RootElement, "outputTokens");
+
+            return new OcrRunMetrics(Math.Round(scoreValue, 3), cost, inputTokens, outputTokens);
         }
         catch (JsonException)
         {
@@ -231,6 +248,18 @@ public static class OcrTestStore
         }
 
         return null;
+    }
+
+    private static int TryReadInt(JsonElement root, string propertyName)
+    {
+        if (root.TryGetProperty(propertyName, out var el) &&
+            el.ValueKind == JsonValueKind.Number &&
+            el.TryGetInt32(out var value))
+        {
+            return value;
+        }
+
+        return 0;
     }
 
     private static string GetModelResultsFolder(OcrTestCase testCase, string ocrModel) =>
@@ -245,12 +274,14 @@ public static class OcrTestStore
 }
 
 /// <summary>Per-model metrics written into consolidated OCR result snapshots.</summary>
-public sealed record OcrRunMetrics(double Score, decimal? Cost);
+public sealed record OcrRunMetrics(double Score, decimal? Cost, int InputTokens, int OutputTokens);
 
 /// <summary>Per-model rollup across cases in a consolidated snapshot.</summary>
 public sealed record OcrModelSummary(
     double? AvgScore,
     decimal TotalCost,
+    long TotalInputTokens,
+    long TotalOutputTokens,
     int SuccessfulRuns,
     string SuccessRate);
 
