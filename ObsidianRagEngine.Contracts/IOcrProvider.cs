@@ -12,5 +12,13 @@ public enum OcrLanguage
 public interface IOcrProvider
 {
     string ModelName { get; }
-    Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct);
+
+    /// <param name="clarificationPrompt">
+    /// Optional domain hint sent as an extra vision-OCR message (ignored by backends with no prompt channel).
+    /// </param>
+    Task<LlmCallResult> ExtractText(
+        byte[] imageBytes,
+        IReadOnlyList<OcrLanguage> languages,
+        CancellationToken ct,
+        string? clarificationPrompt = null);
 }

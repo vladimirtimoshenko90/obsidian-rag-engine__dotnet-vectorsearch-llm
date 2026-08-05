@@ -17,14 +17,19 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
 
     public string ModelName => $"messenger__{ocr.ModelName}__{llm.ModelName}";
 
-    public Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct) =>
-        ExtractText(imageBytes, languages, ct, callbacks: null);
+    public Task<LlmCallResult> ExtractText(
+        byte[] imageBytes,
+        IReadOnlyList<OcrLanguage> languages,
+        CancellationToken ct,
+        string? clarificationPrompt = null) =>
+        ExtractText(imageBytes, languages, ct, callbacks: null, clarificationPrompt);
 
     public async Task<LlmCallResult> ExtractText(
         byte[] imageBytes,
         IReadOnlyList<OcrLanguage> languages,
         CancellationToken ct,
-        MessengerOcrCallbacks? callbacks)
+        MessengerOcrCallbacks? callbacks,
+        string? clarificationPrompt = null)
     {
         var metrics = new CallMetricsTotals();
 
@@ -37,7 +42,7 @@ public sealed class MessengerOcrService(IOcrProvider ocr, ILlmProvider llm) : IO
             // Dark UI / colored bubbles → dark text on a light background for Tesseract.
             var normalized = _normalizer.Normalize(panel);
 
-            var ocrResult = await ocr.ExtractText(normalized, languages, ct);
+            var ocrResult = await ocr.ExtractText(normalized, languages, ct, clarificationPrompt);
             callbacks?.OnPanelOcr?.Invoke(panel, normalized, ocrResult.Text);
 
             texts.Add(ocrResult.Text);

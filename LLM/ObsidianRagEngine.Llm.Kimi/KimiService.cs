@@ -46,13 +46,23 @@ public sealed class KimiService(OpenAIClient openAIClient, KimiAiModel model)
         }
     }
 
-    public Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
+    public Task<LlmCallResult> ExtractText(
+        byte[] imageBytes,
+        IReadOnlyList<OcrLanguage> languages,
+        CancellationToken ct,
+        string? clarificationPrompt = null)
     {
-        ChatMessage message = new UserChatMessage(
-            ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), LlmDefaults.OcrMediaType),
-            ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages)));
+        List<ChatMessage> messages =
+        [
+            new UserChatMessage(
+                ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(imageBytes), LlmDefaults.OcrMediaType),
+                ChatMessageContentPart.CreateTextPart(ImageTextExtractPrompt.Build(languages))),
+        ];
 
-        return CompleteChatCore([message], ct, jsonMode: false, thinkingMode: false);
+        if (!string.IsNullOrWhiteSpace(clarificationPrompt))
+            messages.Add(new UserChatMessage(clarificationPrompt.Trim()));
+
+        return CompleteChatCore(messages, ct, jsonMode: false, thinkingMode: false);
     }
 
     private async Task<LlmCallResult> CompleteChatCore(

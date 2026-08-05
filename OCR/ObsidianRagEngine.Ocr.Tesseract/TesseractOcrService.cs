@@ -14,7 +14,11 @@ public class TesseractOcrService(HttpClient httpClient) : IOcrProvider
 {
     public string ModelName => "tesseract";
 
-    public async Task<LlmCallResult> ExtractText(byte[] imageBytes, IReadOnlyList<OcrLanguage> languages, CancellationToken ct)
+    public async Task<LlmCallResult> ExtractText(
+        byte[] imageBytes,
+        IReadOnlyList<OcrLanguage> languages,
+        CancellationToken ct,
+        string? clarificationPrompt = null)
     {
         var optionsJson = JsonSerializer.Serialize(new
         {
