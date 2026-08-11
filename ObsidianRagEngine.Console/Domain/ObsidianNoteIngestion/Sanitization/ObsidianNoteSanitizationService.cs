@@ -4,16 +4,16 @@ using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Contracts;
 using System.Text.RegularExpressions;
 
-namespace ObsidianRagEngine.Console.Domain.Ingestion.Sanitization;
+namespace ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
 
-public interface INoteSanitizationService
+public interface IObsidianNoteSanitizationService
 {
     Task<string> Sanitize(NoteFileData noteFile, CancellationToken ct);
 }
 
-public class NoteSanitizationService(
+public class ObsidianNoteSanitizationService(
     IObsidianImageRepository noteImageRepo,
-    IOcrProvider ocr) : INoteSanitizationService
+    IOcrProvider ocr) : IObsidianNoteSanitizationService
 {
     public async Task<string> Sanitize(NoteFileData noteFile, CancellationToken ct)
     {

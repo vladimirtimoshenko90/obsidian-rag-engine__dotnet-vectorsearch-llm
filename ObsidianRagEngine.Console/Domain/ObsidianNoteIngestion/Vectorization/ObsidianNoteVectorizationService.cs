@@ -2,11 +2,11 @@ using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 
-namespace ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
+namespace ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 
 public interface IObsidianNoteVectorizationService
 {
-    Task VectorizeNote(ObsidianNote note, CancellationToken ct = default);
+    Task VectorizeNote(ObsidianNote note, CancellationToken ct);
 }
 
 public class ObsidianNoteVectorizationService(
@@ -17,7 +17,7 @@ public class ObsidianNoteVectorizationService(
     private const int ChunkSize = 700;
     private const int Overlap = 120;
 
-    public async Task VectorizeNote(ObsidianNote note, CancellationToken ct = default)
+    public async Task VectorizeNote(ObsidianNote note, CancellationToken ct)
     {
         var existingChunks = await chunkRepo.GetByNoteId(note.Id, ct);
         var newChunkTexts = await chunkingService.Split(note.TextSanitized, ChunkSize, Overlap);

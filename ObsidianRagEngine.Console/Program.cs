@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain.Ingestion;
-using ObsidianRagEngine.Console.Domain.Ingestion.Sanitization;
+using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
+using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
 using ObsidianRagEngine.Console.Domain.Reading;
-using ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
+using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 using ObsidianRagEngine.Llm.DeepSeekOllama;
 using ObsidianRagEngine.Ocr.Instruments.Tesseract;
 using Qdrant.Client;
@@ -75,12 +75,12 @@ var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
 var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
-var noteSanitization = new NoteSanitizationService(imageRepo, ocrService);
+var noteSanitization = new ObsidianNoteSanitizationService(imageRepo, ocrService);
 var processingService = new ObsidianNoteIngestionService(noteRepo, noteSanitization, vectorizationService);
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
 {
     var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
-    await processingService.ProcessNote(noteFile);
+    await processingService.IngestNote(noteFile, CancellationToken.None);
 }

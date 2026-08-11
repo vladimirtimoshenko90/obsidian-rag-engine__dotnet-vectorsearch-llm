@@ -1,22 +1,22 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain.Ingestion.Sanitization;
+using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
+using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 using ObsidianRagEngine.Console.Domain.Reading;
-using ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
 
-namespace ObsidianRagEngine.Console.Domain.Ingestion;
+namespace ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
 
 public interface IObsidianNoteIngestionService
 {
-    Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
+    Task IngestNote(NoteFileData noteFile, CancellationToken ct);
 }
 
 public class ObsidianNoteIngestionService(
     IObsidianNoteRepository noteRepo,
-    INoteSanitizationService noteSanitization,
+    IObsidianNoteSanitizationService noteSanitization,
     IObsidianNoteVectorizationService vectorizationService) : IObsidianNoteIngestionService
 {
-    public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
+    public async Task IngestNote(NoteFileData noteFile, CancellationToken ct)
     {
         var existingNote = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
 

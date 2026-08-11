@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 
-namespace ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
+namespace ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 
 public interface IEmbeddingService
 {
