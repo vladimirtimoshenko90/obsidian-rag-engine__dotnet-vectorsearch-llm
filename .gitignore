@@ -4,7 +4,7 @@
 ## Get latest from `dotnet new gitignore`
 
 # Local machine-only settings (private paths, secrets)
-ObsidianRagEngine.Tests/___testdata/
+Tests/ObsidianRagEngine.Tests/___testdata/
 ObsidianRagEngine.Console/appsettings.Development.json
 
 # User-specific files

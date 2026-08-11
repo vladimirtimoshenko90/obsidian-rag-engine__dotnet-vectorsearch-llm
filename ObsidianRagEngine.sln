@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Console",
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Tests", "ObsidianRagEngine.Tests\ObsidianRagEngine.Tests.csproj", "{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{B4E8C9A2-3D5F-4E6A-9B1C-2D3E4F5A6B7C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Tests", "Tests\ObsidianRagEngine.Tests\ObsidianRagEngine.Tests.csproj", "{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObsidianRagEngine.Contracts", "ObsidianRagEngine.Contracts\ObsidianRagEngine.Contracts.csproj", "{CC136E42-8E77-4241-9329-1C0FF64A1C16}"
 EndProject
@@ -186,6 +188,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{2729E2F8-B1BD-46CA-BFEC-1D6E139C840D} = {B4E8C9A2-3D5F-4E6A-9B1C-2D3E4F5A6B7C}
 		{F84A85A0-7D1D-4D59-A266-B3E64EAE69AC} = {DD7B68A7-7082-7F43-535A-207B4CB941F0}
 		{33284C6D-D64C-4A5B-9717-11957F1A475D} = {DD7B68A7-7082-7F43-535A-207B4CB941F0}
 		{D15EA364-66F0-48A3-AEE0-25CD73ED39C2} = {DD7B68A7-7082-7F43-535A-207B4CB941F0}
