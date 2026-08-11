@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain.Indexing;
+using ObsidianRagEngine.Console.Domain.Ingestion;
 using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Console.Domain.Vectorization;
 using ObsidianRagEngine.Llm.DeepSeekOllama;
@@ -74,7 +74,7 @@ var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
 var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
-var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService, vectorizationService);
+var processingService = new ObsidianNoteIngestionService(noteRepo, imageRepo, ocrService, vectorizationService);
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)

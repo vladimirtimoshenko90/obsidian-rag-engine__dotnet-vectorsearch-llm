@@ -5,18 +5,18 @@ using ObsidianRagEngine.Console.Domain.Vectorization;
 using ObsidianRagEngine.Contracts;
 using System.Text.RegularExpressions;
 
-namespace ObsidianRagEngine.Console.Domain.Indexing;
+namespace ObsidianRagEngine.Console.Domain.Ingestion;
 
-public interface IObsidianNoteIndexingService
+public interface IObsidianNoteIngestionService
 {
     Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
 }
 
-public class ObsidianNoteIndexingService(
+public class ObsidianNoteIngestionService(
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
     IOcrProvider ocr,
-    IObsidianNoteVectorizationService vectorizationService) : IObsidianNoteIndexingService
+    IObsidianNoteVectorizationService vectorizationService) : IObsidianNoteIngestionService
 {
     public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
