@@ -1,29 +1,31 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Console.Domain.Reading;
+using ObsidianRagEngine.Console.Domain.Vectorization;
+using ObsidianRagEngine.Contracts;
 using System.Text.RegularExpressions;
 
 namespace ObsidianRagEngine.Console.Domain.Indexing;
 
 public interface IObsidianNoteIndexingService
 {
-    Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
+    Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default);
 }
 
 public class ObsidianNoteIndexingService(
     IObsidianNoteRepository noteRepo,
     IObsidianImageRepository noteImageRepo,
-    IOcrProvider ocr) : IObsidianNoteIndexingService
+    IOcrProvider ocr,
+    IObsidianNoteVectorizationService vectorizationService) : IObsidianNoteIndexingService
 {
-    public async Task<ObsidianNote> ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
+    public async Task ProcessNote(NoteFileData noteFile, CancellationToken ct = default)
     {
         var existingNote = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
 
         if (existingNote is not null)
         {
             if (existingNote.ContentHash == noteFile.ContentHash)
-                return existingNote;
+                return;
 
             await noteRepo.Delete(existingNote.Id, ct);
         }
@@ -57,12 +59,14 @@ public class ObsidianNoteIndexingService(
         sanitizedText = Regex.Replace(sanitizedText, @"\[\[.*?\]\]", "");   // removing links
         sanitizedText = sanitizedText.Trim();   // trim, just trim
 
-        return await noteRepo.Create(new ObsidianNote
+        var note = await noteRepo.Create(new ObsidianNote
         {
             FilePath = noteFile.FilePath,
             ContentHash = noteFile.ContentHash,
             TextRaw = noteFile.Content,
             TextSanitized = sanitizedText
         }, ct);
+
+        await vectorizationService.VectorizeNote(note, ct);
     }
 }

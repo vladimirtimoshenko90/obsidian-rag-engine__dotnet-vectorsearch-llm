@@ -63,8 +63,6 @@ var imageRepo = new ObsidianImageRepository(db);
 var tesseractUrl = configuration["Tesseract:Url"]!;
 var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
 
-var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService);
-
 var ollamaUrl = configuration["Ollama:Url"]!;
 var ollamaEmbeddingModel = configuration["Ollama:EmbeddingModel"]!;
 var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaEmbeddingModel);
@@ -76,10 +74,11 @@ var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
 var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
+var processingService = new ObsidianNoteIndexingService(noteRepo, imageRepo, ocrService, vectorizationService);
+
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
 {
     var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
-    var note = await processingService.ProcessNote(noteFile);
-    await vectorizationService.VectorizeNote(note);
+    await processingService.ProcessNote(noteFile);
 }
