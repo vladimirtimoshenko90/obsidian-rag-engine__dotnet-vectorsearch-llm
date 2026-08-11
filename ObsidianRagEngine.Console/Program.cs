@@ -76,7 +76,7 @@ var chunkingService = new TextChunkingService();
 var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
 var noteSanitization = new ObsidianNoteSanitizationService(imageRepo, ocrService);
-var processingService = new ObsidianNoteIngestionService(noteRepo, noteSanitization, vectorizationService);
+var processingService = new ObsidianNoteIngestionService(noteRepo, chunkRepo, noteSanitization, vectorizationService);
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)

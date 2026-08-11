@@ -8,6 +8,7 @@ public interface IObsidianNoteChunkRepository
 {
     Task Create(ObsidianNoteChunk chunk, CancellationToken ct = default);
     Task Delete(Guid id, CancellationToken ct = default);
+    Task DeleteByNoteId(int noteId, CancellationToken ct = default);
     Task<IReadOnlyList<ObsidianNoteChunk>> GetByNoteId(int noteId, CancellationToken ct = default);
 }
 
@@ -35,6 +36,26 @@ public class ObsidianNoteChunkRepository(QdrantClient qdrant)
     public async Task Delete(Guid id, CancellationToken ct = default)
     {
         await qdrant.DeleteAsync(CollectionName, id, cancellationToken: ct);
+    }
+
+    public async Task DeleteByNoteId(int noteId, CancellationToken ct = default)
+    {
+        var filter = new Filter
+        {
+            Must =
+            {
+                new Condition
+                {
+                    Field = new FieldCondition
+                    {
+                        Key = "note_id",
+                        Match = new Match { Integer = noteId }
+                    }
+                }
+            }
+        };
+
+        await qdrant.DeleteAsync(CollectionName, filter, cancellationToken: ct);
     }
 
     public async Task<IReadOnlyList<ObsidianNoteChunk>> GetByNoteId(int noteId, CancellationToken ct = default)

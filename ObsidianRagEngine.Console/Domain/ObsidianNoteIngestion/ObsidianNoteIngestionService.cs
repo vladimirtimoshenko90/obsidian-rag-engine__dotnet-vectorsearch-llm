@@ -1,3 +1,4 @@
+using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
@@ -13,6 +14,7 @@ public interface IObsidianNoteIngestionService
 
 public class ObsidianNoteIngestionService(
     IObsidianNoteRepository noteRepo,
+    IObsidianNoteChunkRepository chunkRepo,
     IObsidianNoteSanitizationService noteSanitization,
     IObsidianNoteVectorizationService vectorizationService) : IObsidianNoteIngestionService
 {
@@ -23,7 +25,10 @@ public class ObsidianNoteIngestionService(
         if (note is null || note.ContentHash != noteFile.ContentHash)
         {
             if (note is not null)
+            {
+                await chunkRepo.DeleteByNoteId(note.Id, ct);
                 await noteRepo.Delete(note.Id, ct);
+            }
 
             string sanitizedContent = await noteSanitization.Sanitize(noteFile, ct);
 
