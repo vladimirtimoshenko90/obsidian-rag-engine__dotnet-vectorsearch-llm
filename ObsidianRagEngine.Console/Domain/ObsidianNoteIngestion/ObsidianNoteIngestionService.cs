@@ -18,25 +18,23 @@ public class ObsidianNoteIngestionService(
 {
     public async Task IngestNote(NoteFileData noteFile, CancellationToken ct)
     {
-        var existingNote = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
+        var note = await noteRepo.GetByFilePath(noteFile.FilePath, ct);
 
-        if (existingNote is not null)
+        if (note is null || note.ContentHash != noteFile.ContentHash)
         {
-            if (existingNote.ContentHash == noteFile.ContentHash)
-                return;
+            if (note is not null)
+                await noteRepo.Delete(note.Id, ct);
 
-            await noteRepo.Delete(existingNote.Id, ct);
+            string sanitizedContent = await noteSanitization.Sanitize(noteFile, ct);
+
+            note = await noteRepo.Create(new ObsidianNote
+            {
+                FilePath = noteFile.FilePath,
+                ContentHash = noteFile.ContentHash,
+                TextRaw = noteFile.Content,
+                TextSanitized = sanitizedContent
+            }, ct);
         }
-
-        var sanitizedText = await noteSanitization.Sanitize(noteFile, ct);
-
-        var note = await noteRepo.Create(new ObsidianNote
-        {
-            FilePath = noteFile.FilePath,
-            ContentHash = noteFile.ContentHash,
-            TextRaw = noteFile.Content,
-            TextSanitized = sanitizedText
-        }, ct);
 
         await vectorizationService.VectorizeNote(note, ct);
     }
