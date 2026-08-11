@@ -2,7 +2,7 @@ using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 
-namespace ObsidianRagEngine.Console.Domain.Vectorization;
+namespace ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
 
 public interface IObsidianNoteVectorizationService
 {

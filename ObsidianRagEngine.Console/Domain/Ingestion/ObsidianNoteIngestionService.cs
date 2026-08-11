@@ -2,7 +2,7 @@ using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain.Ingestion.Sanitization;
 using ObsidianRagEngine.Console.Domain.Reading;
-using ObsidianRagEngine.Console.Domain.Vectorization;
+using ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
 
 namespace ObsidianRagEngine.Console.Domain.Ingestion;
 

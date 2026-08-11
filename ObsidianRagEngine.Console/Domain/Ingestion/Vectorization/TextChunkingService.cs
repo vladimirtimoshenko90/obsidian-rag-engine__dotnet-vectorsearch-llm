@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Console.Domain.Vectorization;
+namespace ObsidianRagEngine.Console.Domain.Ingestion.Vectorization;
 
 public interface ITextChunkingService
 {
