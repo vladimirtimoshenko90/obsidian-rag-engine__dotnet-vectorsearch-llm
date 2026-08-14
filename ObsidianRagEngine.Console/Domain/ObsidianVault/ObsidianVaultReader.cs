@@ -1,4 +1,5 @@
 using ObsidianRagEngine.Console.Common.Utility;
+using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 
 namespace ObsidianRagEngine.Console.Domain.ObsidianVault;
@@ -10,7 +11,7 @@ public interface IObsidianVaultReader
     Task<NoteFileData> ReadNote(string filePath);
 }
 
-public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : IObsidianVaultReader
+public class ObsidianVaultReader(IOptions<ObsidianVaultSettings> settings) : IObsidianVaultReader
 {
     private static readonly Regex ImagePattern =
         new(@"!\[\[([^\]]+\.(?:png|jpg|jpeg|gif|webp|svg|bmp))\]\]",
@@ -19,7 +20,7 @@ public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : I
     public List<NoteFileInfo> IdentifyAllNotes()
     {
         return Directory
-            .EnumerateFiles(vaultPath, "*.md", SearchOption.AllDirectories)
+            .EnumerateFiles(settings.Value.Path, "*.md", SearchOption.AllDirectories)
             .Select(filePath => new NoteFileInfo
             {
                 FileName = Path.GetFileNameWithoutExtension(filePath),
@@ -30,7 +31,7 @@ public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : I
 
     public List<NoteFileInfo> IdentifyAllImages()
     {
-        var attachmentsPath = Path.Combine(vaultPath, attachmentsFolder);
+        var attachmentsPath = Path.Combine(settings.Value.Path, settings.Value.AttachmentsFolder);
         if (!Directory.Exists(attachmentsPath))
             return [];
 
@@ -51,7 +52,7 @@ public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : I
 
     public async Task<NoteFileData> ReadNote(string filePath)
     {
-        var attachmentsPath = Path.Combine(vaultPath, attachmentsFolder);
+        var attachmentsPath = Path.Combine(settings.Value.Path, settings.Value.AttachmentsFolder);
 
         var content = await File.ReadAllTextAsync(filePath);
 
@@ -71,4 +72,10 @@ public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : I
             ImagePaths = imagePaths
         };
     }
+}
+
+public sealed class ObsidianVaultSettings
+{
+    public string Path { get; set; } = string.Empty;
+    public string AttachmentsFolder { get; set; } = string.Empty;
 }

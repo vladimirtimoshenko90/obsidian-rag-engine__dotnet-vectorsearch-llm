@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ObsidianRagEngine.Console.Composition.Llm;
 using ObsidianRagEngine.Console.Composition.Ocr;
 using ObsidianRagEngine.Console.Data;
+using ObsidianRagEngine.Console.Domain;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
 using ObsidianRagEngine.Console.Domain.ObsidianVault;
 
@@ -23,6 +24,7 @@ var services = new ServiceCollection();
 services.AddDataLayer(configuration);
 services.AddOcr(configuration);
 services.AddLlm(configuration);
+services.AddDomainLayer(configuration);
 services.AddObsidianNoteIngestion(configuration);
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
@@ -31,9 +33,7 @@ var sp = scope.ServiceProvider;
 await sp.InitializeStorages(CancellationToken.None);
 
 // --- App ---
-var vaultPath = configuration["ObsidianVault:Path"]!;
-var attachmentsFolder = configuration["ObsidianVault:AttachmentsFolder"]!;
-var vaultReader = new ObsidianVaultReader(vaultPath, attachmentsFolder);
+var vaultReader = sp.GetRequiredService<IObsidianVaultReader>();
 var processingService = sp.GetRequiredService<IObsidianNoteIngestionService>();
 
 var noteInfos = vaultReader.IdentifyAllNotes();
