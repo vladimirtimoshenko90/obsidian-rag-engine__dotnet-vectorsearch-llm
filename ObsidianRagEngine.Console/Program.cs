@@ -1,12 +1,13 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using ObsidianRagEngine.Console.Data;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
-using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
+using ObsidianRagEngine.Console.Domain.Reading;
 using ObsidianRagEngine.Llm.DeepSeekOllama;
 using ObsidianRagEngine.Ocr.Instruments.Tesseract;
 using Qdrant.Client;
@@ -25,25 +26,21 @@ var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
 
+var services = new ServiceCollection();
+services.AddDataLayer(configuration);
+await using var serviceProvider = services.BuildServiceProvider();
+using var scope = serviceProvider.CreateScope();
+var sp = scope.ServiceProvider;
+
 // --- PostgreSQL setup ---
-var connectionString = configuration.GetConnectionString("ObsidianNotes");
-
-var dbOptions = new DbContextOptionsBuilder<ObsidianNotesDbContext>()
-    .UseNpgsql(connectionString)
-    .Options;
-
-await using var db = new ObsidianNotesDbContext(dbOptions);
+var db = sp.GetRequiredService<ObsidianNotesDbContext>();
 await db.Database.EnsureCreatedAsync();
-
 Console.WriteLine("PostgreSQL: connection established and schema ensured.");
 
 // --- Qdrant setup ---
 const uint EmbeddingDimension = 768;
 
-var qdrantUri = new Uri(configuration.GetConnectionString("ObsidianNoteChunks")!);
-
-var qdrantClient = new QdrantClient(qdrantUri);
-
+var qdrantClient = sp.GetRequiredService<QdrantClient>();
 var collectionExists = await qdrantClient.CollectionExistsAsync(ObsidianNoteChunkRepository.CollectionName);
 if (!collectionExists)
 {
@@ -58,8 +55,9 @@ var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
 var attachmentsFolder = configuration["ObsidianRepository:AttachmentsFolder"]!;
 var obsidianRepo = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
 
-var noteRepo = new ObsidianNoteRepository(db);
-var imageRepo = new ObsidianImageRepository(db);
+var noteRepo = sp.GetRequiredService<IObsidianNoteRepository>();
+var imageRepo = sp.GetRequiredService<IObsidianImageRepository>();
+var chunkRepo = sp.GetRequiredService<IObsidianNoteChunkRepository>();
 
 var tesseractUrl = configuration["Tesseract:Url"]!;
 var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
@@ -71,7 +69,6 @@ var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress =
 var ollamaLlmModel = configuration["Ollama:LlmModel"]!;
 var llmService = new DeepSeekOllamaService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaLlmModel);
 
-var chunkRepo = new ObsidianNoteChunkRepository(qdrantClient);
 var chunkingService = new TextChunkingService();
 var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
 
