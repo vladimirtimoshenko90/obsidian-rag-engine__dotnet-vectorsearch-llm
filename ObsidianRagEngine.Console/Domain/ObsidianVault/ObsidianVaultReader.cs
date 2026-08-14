@@ -1,16 +1,16 @@
 using ObsidianRagEngine.Console.Common.Utility;
 using System.Text.RegularExpressions;
 
-namespace ObsidianRagEngine.Console.Domain.Reading;
+namespace ObsidianRagEngine.Console.Domain.ObsidianVault;
 
-public interface IObsidianRepositoryReader
+public interface IObsidianVaultReader
 {
     List<NoteFileInfo> IdentifyAllNotes();
     List<NoteFileInfo> IdentifyAllImages();
     Task<NoteFileData> ReadNote(string filePath);
 }
 
-public class ObsidianRepositoryReader(string repositoryPath, string attachmentsFolder) : IObsidianRepositoryReader
+public class ObsidianVaultReader(string vaultPath, string attachmentsFolder) : IObsidianVaultReader
 {
     private static readonly Regex ImagePattern =
         new(@"!\[\[([^\]]+\.(?:png|jpg|jpeg|gif|webp|svg|bmp))\]\]",
@@ -19,7 +19,7 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
     public List<NoteFileInfo> IdentifyAllNotes()
     {
         return Directory
-            .EnumerateFiles(repositoryPath, "*.md", SearchOption.AllDirectories)
+            .EnumerateFiles(vaultPath, "*.md", SearchOption.AllDirectories)
             .Select(filePath => new NoteFileInfo
             {
                 FileName = Path.GetFileNameWithoutExtension(filePath),
@@ -30,7 +30,7 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
 
     public List<NoteFileInfo> IdentifyAllImages()
     {
-        var attachmentsPath = Path.Combine(repositoryPath, attachmentsFolder);
+        var attachmentsPath = Path.Combine(vaultPath, attachmentsFolder);
         if (!Directory.Exists(attachmentsPath))
             return [];
 
@@ -51,7 +51,7 @@ public class ObsidianRepositoryReader(string repositoryPath, string attachmentsF
 
     public async Task<NoteFileData> ReadNote(string filePath)
     {
-        var attachmentsPath = Path.Combine(repositoryPath, attachmentsFolder);
+        var attachmentsPath = Path.Combine(vaultPath, attachmentsFolder);
 
         var content = await File.ReadAllTextAsync(filePath);
 

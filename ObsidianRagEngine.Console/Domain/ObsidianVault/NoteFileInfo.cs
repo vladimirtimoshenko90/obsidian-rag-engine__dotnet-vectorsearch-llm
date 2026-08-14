@@ -1,4 +1,4 @@
-namespace ObsidianRagEngine.Console.Domain.Reading;
+namespace ObsidianRagEngine.Console.Domain.ObsidianVault;
 
 public class NoteFileInfo
 {

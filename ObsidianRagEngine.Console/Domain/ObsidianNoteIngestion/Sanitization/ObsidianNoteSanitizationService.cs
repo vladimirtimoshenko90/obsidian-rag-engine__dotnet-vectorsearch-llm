@@ -1,6 +1,6 @@
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Entities;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
-using ObsidianRagEngine.Console.Domain.Reading;
+using ObsidianRagEngine.Console.Domain.ObsidianVault;
 using ObsidianRagEngine.Contracts;
 using System.Text.RegularExpressions;
 

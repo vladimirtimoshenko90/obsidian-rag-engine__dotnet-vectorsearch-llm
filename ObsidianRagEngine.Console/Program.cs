@@ -4,7 +4,7 @@ using ObsidianRagEngine.Console.Composition.Llm;
 using ObsidianRagEngine.Console.Composition.Ocr;
 using ObsidianRagEngine.Console.Data;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
-using ObsidianRagEngine.Console.Domain.Reading;
+using ObsidianRagEngine.Console.Domain.ObsidianVault;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -31,14 +31,14 @@ var sp = scope.ServiceProvider;
 await sp.InitializeStorages(CancellationToken.None);
 
 // --- App ---
-var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
-var attachmentsFolder = configuration["ObsidianRepository:AttachmentsFolder"]!;
-var obsidianRepo = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
+var vaultPath = configuration["ObsidianVault:Path"]!;
+var attachmentsFolder = configuration["ObsidianVault:AttachmentsFolder"]!;
+var vaultReader = new ObsidianVaultReader(vaultPath, attachmentsFolder);
 var processingService = sp.GetRequiredService<IObsidianNoteIngestionService>();
 
-var noteInfos = obsidianRepo.IdentifyAllNotes();
+var noteInfos = vaultReader.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
 {
-    var noteFile = await obsidianRepo.ReadNote(noteInfo.FilePath);
+    var noteFile = await vaultReader.ReadNote(noteInfo.FilePath);
     await processingService.IngestNote(noteFile, CancellationToken.None);
 }
