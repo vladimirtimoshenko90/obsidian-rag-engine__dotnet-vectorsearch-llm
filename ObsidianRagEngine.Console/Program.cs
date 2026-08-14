@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ObsidianRagEngine.Console.Composition.Ocr;
 using ObsidianRagEngine.Console.Data;
 using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
 using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
@@ -7,8 +8,8 @@ using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 using ObsidianRagEngine.Console.Domain.Reading;
+using ObsidianRagEngine.Contracts;
 using ObsidianRagEngine.Llm.DeepSeekOllama;
-using ObsidianRagEngine.Ocr.Instruments.Tesseract;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -25,6 +26,7 @@ var configuration = new ConfigurationBuilder()
 
 var services = new ServiceCollection();
 services.AddDataLayer(configuration);
+services.AddOcr(configuration);
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 var sp = scope.ServiceProvider;
@@ -40,8 +42,7 @@ var noteRepo = sp.GetRequiredService<IObsidianNoteRepository>();
 var imageRepo = sp.GetRequiredService<IObsidianImageRepository>();
 var chunkRepo = sp.GetRequiredService<IObsidianNoteChunkRepository>();
 
-var tesseractUrl = configuration["Tesseract:Url"]!;
-var ocrService = new TesseractOcrService(new HttpClient { BaseAddress = new Uri(tesseractUrl) });
+var ocrService = sp.GetRequiredService<IOcrProvider>();
 
 var ollamaUrl = configuration["Ollama:Url"]!;
 var ollamaEmbeddingModel = configuration["Ollama:EmbeddingModel"]!;
