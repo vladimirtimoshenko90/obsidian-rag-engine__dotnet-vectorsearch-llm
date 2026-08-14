@@ -10,8 +10,11 @@ public static class ApplicationStartup
 {
     private const uint EmbeddingDimension = 768;
 
-    public static async Task InitializeStorages(this IServiceProvider services, CancellationToken ct)
+    public static async Task InitializeStorages(this IServiceProvider root, CancellationToken ct)
     {
+        using var scope = root.CreateScope();
+        var services = scope.ServiceProvider;
+
         var db = services.GetRequiredService<ObsidianNotesDbContext>();
         await db.Database.EnsureCreatedAsync(ct);
         System.Console.WriteLine("PostgreSQL: connection established and schema ensured.");
