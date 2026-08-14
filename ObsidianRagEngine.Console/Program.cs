@@ -3,13 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using ObsidianRagEngine.Console.Composition.Llm;
 using ObsidianRagEngine.Console.Composition.Ocr;
 using ObsidianRagEngine.Console.Data;
-using ObsidianRagEngine.Console.Data.ObsidianNoteChunks.Repositories;
-using ObsidianRagEngine.Console.Data.ObsidianNotes.Repositories;
 using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion;
-using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
-using ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Vectorization;
 using ObsidianRagEngine.Console.Domain.Reading;
-using ObsidianRagEngine.Contracts;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -28,6 +23,7 @@ var services = new ServiceCollection();
 services.AddDataLayer(configuration);
 services.AddOcr(configuration);
 services.AddLlm(configuration);
+services.AddObsidianNoteIngestion(configuration);
 await using var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 var sp = scope.ServiceProvider;
@@ -38,22 +34,7 @@ await sp.InitializeStorages(CancellationToken.None);
 var obsidianRepositoryPath = configuration["ObsidianRepository:Path"]!;
 var attachmentsFolder = configuration["ObsidianRepository:AttachmentsFolder"]!;
 var obsidianRepo = new ObsidianRepositoryReader(obsidianRepositoryPath, attachmentsFolder);
-
-var noteRepo = sp.GetRequiredService<IObsidianNoteRepository>();
-var imageRepo = sp.GetRequiredService<IObsidianImageRepository>();
-var chunkRepo = sp.GetRequiredService<IObsidianNoteChunkRepository>();
-
-var ocrService = sp.GetRequiredService<IOcrProvider>();
-
-var ollamaUrl = configuration["Ollama:Url"]!;
-var ollamaEmbeddingModel = configuration["Ollama:EmbeddingModel"]!;
-var embeddingService = new OllamaEmbeddingService(new HttpClient { BaseAddress = new Uri(ollamaUrl) }, ollamaEmbeddingModel);
-
-var chunkingService = new TextChunkingService();
-var vectorizationService = new ObsidianNoteVectorizationService(chunkRepo, chunkingService, embeddingService);
-
-var noteSanitization = new ObsidianNoteSanitizationService(imageRepo, ocrService);
-var processingService = new ObsidianNoteIngestionService(noteRepo, chunkRepo, noteSanitization, vectorizationService);
+var processingService = sp.GetRequiredService<IObsidianNoteIngestionService>();
 
 var noteInfos = obsidianRepo.IdentifyAllNotes();
 foreach (var noteInfo in noteInfos)
