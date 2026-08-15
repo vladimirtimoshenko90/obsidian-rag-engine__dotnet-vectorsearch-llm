@@ -9,6 +9,9 @@ public class TextChunkingService : ITextChunkingService
 {
     public Task<List<string>> Split(string text, int chunkSize, int overlap)
     {
+        if (string.IsNullOrEmpty(text))
+            return Task.FromResult(new List<string>());
+
         if (text.Length <= chunkSize)
             return Task.FromResult(new List<string> { text });
 
