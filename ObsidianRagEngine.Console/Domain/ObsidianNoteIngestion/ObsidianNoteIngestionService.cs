@@ -30,14 +30,15 @@ public class ObsidianNoteIngestionService(
                 await noteRepo.Delete(note.Id, ct);
             }
 
-            string sanitizedContent = await noteSanitization.Sanitize(noteFile, ct);
+            var (sanitizedContent, cost) = await noteSanitization.Sanitize(noteFile, ct);
 
             note = await noteRepo.Create(new ObsidianNote
             {
                 FilePath = noteFile.FilePath,
                 ContentHash = noteFile.ContentHash,
                 TextRaw = noteFile.Content,
-                TextSanitized = sanitizedContent
+                TextSanitized = sanitizedContent,
+                Cost = cost,
             }, ct);
         }
 

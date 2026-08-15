@@ -8,16 +8,17 @@ namespace ObsidianRagEngine.Console.Domain.ObsidianNoteIngestion.Sanitization;
 
 public interface IObsidianNoteSanitizationService
 {
-    Task<string> Sanitize(NoteFileData noteFile, CancellationToken ct);
+    Task<(string Text, decimal Cost)> Sanitize(NoteFileData noteFile, CancellationToken ct);
 }
 
 public class ObsidianNoteSanitizationService(
     IObsidianImageRepository noteImageRepo,
     IOcrProvider ocr) : IObsidianNoteSanitizationService
 {
-    public async Task<string> Sanitize(NoteFileData noteFile, CancellationToken ct)
+    public async Task<(string Text, decimal Cost)> Sanitize(NoteFileData noteFile, CancellationToken ct)
     {
         var sanitizedText = noteFile.Content;
+        decimal cost = 0m;
 
         foreach (var imagePath in noteFile.ImagePaths)
         {
@@ -34,9 +35,12 @@ public class ObsidianNoteSanitizationService(
                 {
                     FilePath = imagePath,
                     OcrModel = ocr.ModelName,
-                    ExtractedText = extractResult.Text
+                    ExtractedText = extractResult.Text,
+                    Cost = extractResult.Cost,
                 }, ct);
             }
+
+            cost += ocrResult.Cost;
 
             var imageEmbed = $"![[{Path.GetFileName(imagePath)}]]";
             sanitizedText = sanitizedText.Replace(imageEmbed, ocrResult.ExtractedText);
@@ -46,6 +50,6 @@ public class ObsidianNoteSanitizationService(
         sanitizedText = Regex.Replace(sanitizedText, @"\[\[.*?\]\]", "");   // removing links
         sanitizedText = sanitizedText.Trim();   // trim, just trim
 
-        return sanitizedText;
+        return (sanitizedText, cost);
     }
 }

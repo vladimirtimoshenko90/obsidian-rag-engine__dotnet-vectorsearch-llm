@@ -6,4 +6,5 @@ public class ObsidianImage
     public string FilePath { get; set; } = string.Empty;
     public string OcrModel { get; set; } = string.Empty;
     public string ExtractedText { get; set; } = string.Empty;
+    public decimal Cost { get; set; }
 }
