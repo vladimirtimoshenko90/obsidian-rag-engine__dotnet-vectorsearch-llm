@@ -24,7 +24,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Instruments.Tesseract\ObsidianRagEngine.Ocr.Instruments.Tesseract.csproj" />
-    <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.DeepSeekOllama\ObsidianRagEngine.Llm.DeepSeekOllama.csproj" />
+    <ProjectReference Include="..\OCR\ObsidianRagEngine.Ocr.Domains.Messenger\ObsidianRagEngine.Ocr.Domains.Messenger.csproj" />
+    <ProjectReference Include="..\LLM\ObsidianRagEngine.Llm.OpenRouter\ObsidianRagEngine.Llm.OpenRouter.csproj" />
   </ItemGroup>
 
 </Project>
